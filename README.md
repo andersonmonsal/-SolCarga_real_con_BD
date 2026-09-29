@@ -17,7 +17,7 @@ RideNow es una plataforma moderna para gestionar estaciones de carga de vehícul
 - **Frontend:** HTML5, CSS3 Variables/Grid/Flex, Vanilla JS (SPA architecture), Socket.IO Client.
 - **Backend:** Node.js, Express, Socket.IO, JSON Web Tokens.
 - **Base de Datos:** SQLite.
-- **IA:** OpenAI API (`gpt-4o-mini`).
+
 
 ## 📦 Cómo ejecutar localmente
 
