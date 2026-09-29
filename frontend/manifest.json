@@ -1,0 +1,35 @@
+{
+  "name": "RideNow - Estación de Carga",
+  "short_name": "RideNow",
+  "description": "Reserva tu puerto de carga para patineta o bicicleta eléctrica",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#152c24",
+  "theme_color": "#152c24",
+  "orientation": "portrait-primary",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/img/icon-512.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/img/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["utilities", "lifestyle"],
+  "shortcuts": [
+    {
+      "name": "Ver puertos disponibles",
+      "short_name": "Puertos",
+      "description": "Ver disponibilidad en tiempo real",
+      "url": "/?shortcut=home",
+      "icons": [{ "src": "/img/icon-512.png", "sizes": "192x192" }]
+    }
+  ]
+}

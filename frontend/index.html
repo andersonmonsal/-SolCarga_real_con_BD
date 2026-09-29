@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <!-- Skip navigation for screen readers -->
+    <meta charset="UTF-8">
+    <!-- Mobile optimized viewport — covers notch on iOS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ELECTRA - Estación Inteligente</title>
+
+    <!-- PWA / App-like on iOS & Android -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="ELECTRA">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#152c24">
+
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json?v=2">
+    <link rel="apple-touch-icon" href="/img/logo.jpg?v=2">
+
+    <!-- SEO -->
+    <meta name="description" content="ELECTRA — Estación inteligente de carga para patinetas y bicicletas eléctricas">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/css/styles.css?v=3">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        /* Override inline auth positioning */
+        .auth-card {
+            position: relative;
+            z-index: 1;
+            top: auto;
+            transform: none;
+        }
+    </style>
+
+    <!-- Dependencies -->
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- QR Scanner library -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body data-theme="normal">
+
+    <!-- Skip to main content (accessibility) -->
+    <a href="#mainContent" class="skip-link" tabindex="0">Saltar al contenido principal</a>
+
+    <!-- ================== AUTH (LOGIN) ================== -->
+    <div id="loginView" class="view auth-view hidden">
+        <div class="auth-card professional-card">
+            <div class="brand-header">
+                <div class="brand-icon">
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+                </div>
+                <h1>ELECTRA</h1>
+                <p style="font-size:13px; color:var(--muted); font-weight:500; margin:0;">Movilidad eléctrica inteligente</p>
+            </div>
+            
+            <div class="role-selector">
+                <button class="role-btn active" onclick="selectLoginRole('user')" data-i18n="roleUser">Usuario</button>
+                <button class="role-btn" onclick="selectLoginRole('admin')" data-i18n="roleAdmin">Administrador</button>
+            </div>
+
+            <p id="loginSubtitle" data-i18n="loginSubtitle">Portal de acceso para usuarios</p>
+
+            <form id="loginForm">
+                <label for="loginEmail" data-i18n="email">Correo</label>
+                <input type="email" id="loginEmail" required autocomplete="email" placeholder="tu@correo.com">
+
+                <label for="loginPassword" data-i18n="password">Contraseña</label>
+                <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="••••••••">
+
+                <div style="text-align: right; margin-top: 10px;">
+                    <a href="#" style="font-size: 13px; color: var(--green); text-decoration: none; font-weight: 600;" onclick="showForgotPassword()" data-i18n="forgotPassword">¿Olvidaste tu contraseña?</a>
+                </div>
+
+                <p id="loginMessage" class="error-message"></p>
+
+                <button type="submit" class="primary-button" data-i18n="login">Iniciar sesión</button>
+            </form>
+
+            <button id="showRegister" class="link-button" data-i18n="createAccount">Crear una cuenta</button>
+        </div>
+    </div>
+
+    <!-- ================== AUTH (REGISTER) ================== -->
+    <div id="registerView" class="view auth-view hidden">
+        <div class="auth-card professional-card">
+            <div class="brand-header">
+                <div class="brand-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+                <h1>ELECTRA</h1>
+            </div>
+
+            <form id="registerForm">
+                <label for="registerName" data-i18n="firstName">Nombre</label>
+                <input type="text" id="registerName" required autocomplete="given-name">
+
+                <label for="registerLastName" data-i18n="lastName">Apellido</label>
+                <input type="text" id="registerLastName" autocomplete="family-name">
+
+                <label for="registerEmail" data-i18n="email">Correo electrónico</label>
+                <input type="email" id="registerEmail" required autocomplete="email">
+
+                <label for="registerPassword" data-i18n="password">Contraseña</label>
+                <input type="password" id="registerPassword" required minlength="8" autocomplete="new-password">
+                <div id="passwordHint" data-i18n="passwordHint" style="font-size: 12px; color: var(--muted); margin-top: 4px; text-align: left;">
+                    Mínimo 8 caracteres con al menos un carácter especial (!@#$%&*)
+                </div>
+                <div id="passwordStrength" style="margin-top: 6px; display: flex; gap: 4px;">
+                    <div class="strength-bar" style="flex:1; height:4px; border-radius:2px; background: var(--border); transition: background 0.3s;"></div>
+                    <div class="strength-bar" style="flex:1; height:4px; border-radius:2px; background: var(--border); transition: background 0.3s;"></div>
+                    <div class="strength-bar" style="flex:1; height:4px; border-radius:2px; background: var(--border); transition: background 0.3s;"></div>
+                </div>
+
+                <label for="registerConfirmPassword" data-i18n="confirmPassword">Confirmar contraseña</label>
+                <input type="password" id="registerConfirmPassword" required minlength="8" autocomplete="new-password">
+
+                <label for="vehicleType" data-i18n="mainVehicle">Vehículo principal</label>
+                <select id="vehicleType" required>
+                    <option value="Patineta" data-i18n-opt="vehicleScooter">🛴 Patineta Eléctrica</option>
+                    <option value="Bicicleta" data-i18n-opt="vehicleBike">🚲 Bicicleta Eléctrica</option>
+                </select>
+
+                <p id="registerMessage" class="error-message"></p>
+
+                <button type="submit" class="primary-button" data-i18n="register">Crear cuenta</button>
+            </form>
+
+            <button id="showLogin" class="link-button" data-i18n="alreadyHaveAccount">Ya tengo una cuenta</button>
+        </div>
+    </div>
+
+    <!-- ================== AUTH (VERIFY EMAIL) ================== -->
+    <div id="verifyEmailView" class="view auth-view hidden">
+        <div class="auth-card professional-card">
+            <div class="brand-header">
+                <div class="brand-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+                <h1>ELECTRA</h1>
+            </div>
+
+            <p style="text-align:center; font-size:14px; margin-bottom:15px;">Hemos enviado un código a tu correo. Por favor, ingrésalo para verificar tu cuenta.</p>
+
+            <form id="verifyEmailForm">
+                <input type="hidden" id="verifyEmailAddress">
+                <label for="verifyCode">Código de verificación</label>
+                <input type="text" id="verifyCode" required maxlength="6" style="text-align:center; font-size:24px; letter-spacing:4px;" autocomplete="one-time-code">
+
+                <p id="verifyMessage" class="error-message"></p>
+
+                <button type="submit" class="primary-button">Verificar correo</button>
+            </form>
+
+            <button onclick="showLogin()" class="link-button">Volver al inicio de sesión</button>
+        </div>
+    </div>
+
+    <!-- ================== AUTH (FORGOT PASSWORD) ================== -->
+    <div id="forgotPasswordView" class="view auth-view hidden">
+        <div class="auth-card professional-card">
+            <div class="brand-header">
+                <div class="brand-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+                <h1>ELECTRA</h1>
+            </div>
+
+            <p style="text-align:center; font-size:14px; margin-bottom:15px;">Ingresa tu correo y te enviaremos un código para restablecer tu contraseña.</p>
+
+            <form id="forgotPasswordForm">
+                <label for="forgotEmail" data-i18n="email">Correo electrónico</label>
+                <input type="email" id="forgotEmail" required autocomplete="email">
+
+                <p id="forgotMessage" class="error-message"></p>
+
+                <button type="submit" class="primary-button">Enviar código</button>
+            </form>
+
+            <button onclick="showLogin()" class="link-button">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- ================== AUTH (RESET PASSWORD) ================== -->
+    <div id="resetPasswordView" class="view auth-view hidden">
+        <div class="auth-card professional-card">
+            <div class="brand-header">
+                <div class="brand-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+                <h1>ELECTRA</h1>
+            </div>
+
+            <p style="text-align:center; font-size:14px; margin-bottom:15px;">Ingresa el código que recibiste y tu nueva contraseña.</p>
+
+            <form id="resetPasswordForm">
+                <label for="resetToken">Código de recuperación</label>
+                <input type="text" id="resetToken" required>
+
+                <label for="newPassword">Nueva contraseña</label>
+                <input type="password" id="newPassword" required minlength="8">
+                
+                <p id="resetMessage" class="error-message"></p>
+
+                <button type="submit" class="primary-button">Restablecer contraseña</button>
+            </form>
+
+            <button onclick="showLogin()" class="link-button">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- ================== MAIN APP ================== -->
+    <div id="appView" class="view app-view hidden">
+
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="header-brand">
+                <strong>ELECTRA</strong>
+                <span class="header-subtitle">Movilidad eléctrica inteligente</span>
+                <small id="welcomeUser"></small>
+            </div>
+            <div class="top-actions">
+                <button id="themeToggleButton" aria-label="Cambiar tema oscuro/claro" title="Cambiar tema">🌙</button>
+                <button id="languageButton" aria-label="Cambiar idioma">ES</button>
+                <button id="accessibilityButton" aria-label="Opciones de accesibilidad">♿</button>
+                <button id="logoutButton" aria-label="Cerrar sesión">🚪</button>
+            </div>
+        </header>
+
+        <main id="mainContent">
+
+            <!-- HOME SECTION -->
+            <section id="homeSection" class="page-section">
+
+                <div style="margin-bottom: 25px;">
+                    <h2 style="margin: 0; font-size: 26px;" id="greetingText" data-i18n="greeting">Hola 👋</h2>
+                    <p style="color: var(--muted); margin-top: 5px; font-size: 16px;" data-i18n="greetingSubtitle">¿Qué deseas hacer?</p>
+                    <button class="primary-button" style="width: auto; margin-top: 10px; padding: 10px 24px;" data-i18n="findBay" onclick="document.getElementById('baysGrid').scrollIntoView({behavior: 'smooth'})">Buscar una bahía &rarr;</button>
+                </div>
+
+                <img src="/img/home-hero.jpg" alt="Estación ELECTRA" style="width: 100%; height: 200px; object-fit: cover; border-radius: 16px; margin-bottom: 20px; box-shadow: var(--shadow-sm);">
+
+                <div class="hero">
+                    <div>
+                        <h2>Energía <span>100% renovable</span></h2>
+                        <p>Sostenibilidad en movimiento</p>
+                    </div>
+                    <div class="hero-sun">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z"/></svg>
+                    </div>
+                </div>
+
+                <div class="section-title">
+                    <div>
+                        <h2 data-i18n="chargingBays">Bahías disponibles</h2>
+                        <p data-i18n="realTime">Disponibilidad en tiempo real</p>
+                    </div>
+                    <strong id="availableCount">0 / 8</strong>
+                </div>
+
+                <div class="legend">
+                    <span data-i18n="available">🟢 Disponible</span>
+                    <span data-i18n="occupied">🔴 Ocupada</span>
+                    <span data-i18n="reserved">🟡 Reservada</span>
+                    <span data-i18n="offline">⚪ Fuera de servicio</span>
+                </div>
+
+                <div id="baysGrid" class="bays-grid" role="list" aria-label="Lista de bahías de carga">
+                    <!-- Dynamic from JS -->
+                </div>
+
+                <!-- SOLAR POINTS FEATURE CARD -->
+                <div class="solar-points-card" role="region" aria-label="Puntos por energía solar">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <h3 style="margin: 0; font-size: 14px; font-weight: 700; color: var(--text);">Puntos acumulados</h3>
+                        <span style="font-size: 12px; font-weight: 700; color: var(--yellow); background: var(--yellow-light); border-radius: 20px; padding: 2px 8px; border: 1px solid var(--yellow-border);">3 Pts</span>
+                    </div>
+                    <p style="margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5;">Ganas puntos al cargar y cuidas el medio ambiente.</p>
+                </div>
+
+            </section>
+
+            <!-- RESERVATION SECTION -->
+            <section id="reservationSection" class="page-section hidden">
+                <button id="backHome" class="link-button" style="margin-top:0" data-i18n="backHome">← Volver</button>
+
+                <h2 data-i18n="makeReservation">Reservar puerto</h2>
+
+                <div id="selectedBay">
+                    <!-- Dynamic -->
+                </div>
+
+                <label data-i18n="vehicleQuestion">¿Qué vehículo vas a cargar?</label>
+                <div class="vehicle-selector" id="vehicleSelector">
+                    <button type="button" class="vehicle-option active" data-vehicle="Patineta" onclick="selectVehicle('Patineta')">
+                        <span class="vehicle-option-icon">🛴</span>
+                        <span class="vehicle-option-label" data-i18n="vehicleScooter">Patineta Eléctrica</span>
+                    </button>
+                    <button type="button" class="vehicle-option" data-vehicle="Bicicleta" onclick="selectVehicle('Bicicleta')">
+                        <span class="vehicle-option-icon">🚲</span>
+                        <span class="vehicle-option-label" data-i18n="vehicleBike">Bicicleta Eléctrica</span>
+                    </button>
+                </div>
+
+                <label data-i18n="arrival">Hora de llegada (05:00 - 22:00)</label>
+                <div style="margin-top: 5px; margin-bottom: 15px;">
+                    <input type="time" id="arrivalInput" min="05:00" max="22:00" value="08:00" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 16px; width: 100%;">
+                </div>
+
+                <br>
+                <label data-i18n="departure">Hora de salida (hasta las 22:00)</label>
+                <div style="margin-top: 5px; margin-bottom: 15px;">
+                    <input type="time" id="departureInput" min="05:00" max="22:00" value="09:00" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 16px; width: 100%;">
+                </div>
+
+                <button id="confirmReservation" class="primary-button" style="margin-top: 30px" data-i18n="confirmReservationBtn">Confirmar reserva</button>
+            </section>
+
+            <!-- QR SECTION -->
+            <section id="qrSection" class="page-section hidden" style="
+                position: fixed;
+                top: 56px;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 50;
+                background: url('/img/qr-bg.jpg') center/cover no-repeat;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+                padding-bottom: 80px;
+            ">
+                <div style="width: 100%; max-width: 420px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); padding: 30px; box-shadow: var(--shadow-lg); border-radius: 16px; text-align: center;">
+                    <h2 data-i18n="myQR" style="margin-top: 0; font-size: 20px; font-weight: 800; margin-bottom: 20px;">Mi QR</h2>
+                    <div id="qrContainer">
+                        <!-- Dynamic -->
+                    </div>
+                </div>
+            </section>
+
+            <!-- LOCATION SECTION -->
+            <section id="locationSection" class="page-section hidden" style="
+                position: fixed;
+                top: 56px;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                z-index: 50;
+                background: url('/img/location-bg.jpg') center/cover no-repeat;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+                padding-bottom: 80px;
+            ">
+                <div class="location-card" style="width: 100%; max-width: 480px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); padding: 30px; box-shadow: var(--shadow-lg); border-radius: 16px;">
+                    <h2 data-i18n="location" style="margin-top: 0; font-size: 20px; font-weight: 800; margin-bottom: 20px;">Ubicación</h2>
+                    
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+                        <span style="background: var(--accent-light); color: var(--accent); padding: 6px; border-radius: 8px;">🗺️</span>
+                        <strong style="font-size: 14px; color: var(--text);">Mapa en la app</strong>
+                    </div>
+
+                    <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px;">
+                        <span style="background: var(--accent-light); color: var(--accent); padding: 6px; border-radius: 8px;">📍</span>
+                        <div>
+                            <strong id="stationName" style="font-size: 14px; color: var(--text);">ELECTRA Campus Central</strong>
+                            <p id="stationAddress" style="font-size: 12px; color: var(--muted); margin: 2px 0;">Universidad de Medellín, Cra. 87 # 30-65</p>
+                            <p id="stationHours" style="font-size: 11px; color: var(--muted); margin: 0;">Lunes a Viernes: 6:00 AM - 10:00 PM | Sábados: 8:00 AM - 6:00 PM</p>
+                        </div>
+                    </div>
+
+                    <!-- Live GPS distance -->
+                    <div id="gpsDistanceInfo" style="margin-top: 8px; min-height: 22px;"></div>
+                    
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                        <span style="color: var(--green); font-size: 16px;">🚶‍♂️</span>
+                        <strong data-i18n="walkingTime" style="font-size: 13px; color: var(--green);">3 minutos caminando</strong>
+                    </div>
+                    
+                    <div style="border-radius: 12px; overflow: hidden; border: 1px solid var(--border); position: relative;">
+                        <iframe 
+                            src="https://maps.google.com/maps?q=6.231435,-75.612030&hl=es&z=17&output=embed" 
+                            width="100%" 
+                            height="200" 
+                            style="border:0; display: block;" 
+                            allowfullscreen="" 
+                            loading="lazy" 
+                            referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                    </div>
+                </div>
+            </section>
+
+            <!-- CHAT SECTION (antes "AI") -->
+            <section id="aiSection" class="page-section hidden">
+                <div class="chat-header">
+                    <div>
+                        <h2 style="margin: 0;" data-i18n="assistantTitle">Asistente ☀️</h2>
+                        <p style="margin: 2px 0 0; color: var(--muted); font-size: 13px;" data-i18n="assistantSubtitle">Responde en tiempo real</p>
+                    </div>
+                    <button id="clearChatBtn" class="clear-chat-btn" aria-label="Borrar conversación" onclick="clearChatHistory()" data-i18n="clearChat">🗑️ Limpiar</button>
+                </div>
+
+                <div id="aiMessages" class="ai-messages">
+                    <div class="ai-message bot">
+                        <div class="msg-bubble" id="chatWelcomeMsg" data-i18n="chatWelcome">¡Hola! Soy tu asistente de ELECTRA. ¿En qué te puedo ayudar? ☀️</div>
+                    </div>
+                </div>
+
+                <form id="aiForm" class="chat-input-row">
+                    <input type="text" id="aiInput" placeholder="Escribe un mensaje..." data-i18n-placeholder="chatPlaceholder" aria-label="Mensaje para el asistente" autocomplete="off">
+                    <button type="submit" class="send-btn" aria-label="Enviar">➤</button>
+                </form>
+
+                <!-- Suggestion chips -->
+                <div class="chat-chips" role="group" aria-label="Preguntas sugeridas">
+                    <button class="chip" data-chip-es="¿Qué bahías están disponibles ahora?" data-chip-en="What bays are available now?" data-i18n="chipAvailable" onclick="sendChipI18n(this)">⚡ ¿Disponibles?</button>
+
+                    <button class="chip" data-chip-es="¿Cuál es el estado de mi reserva?" data-chip-en="What is the status of my reservation?" onclick="sendChipI18n(this)">📋 Mi reserva</button>
+                    <button class="chip" data-chip-es="Recomiéndame una bahía para mi vehículo" data-chip-en="Recommend me a bay for my vehicle" data-i18n="chipRecommend" onclick="sendChipI18n(this)">🎯 Recomiéndame</button>
+                    <button class="chip" data-chip-es="¿Cómo funciona el sistema de carga?" data-chip-en="How does the charging system work?" data-i18n="chipHowItWorks" onclick="sendChipI18n(this)">🚀 ¿Cómo funciona?</button>
+                    <button class="chip" data-chip-es="¿Cuánto tiempo puedo cargar?" data-chip-en="How long can I charge?" data-i18n="chipChargeTime" onclick="sendChipI18n(this)">⏱️ Tiempo de carga</button>
+                    <button class="chip" data-chip-es="¿Cómo cancelo mi reserva?" data-chip-en="How do I cancel my reservation?" data-i18n="chipCancelReservation" onclick="sendChipI18n(this)">❌ Cancelar reserva</button>
+                    <button class="chip" data-chip-es="¿Cuánta energía solar genera la estación?" data-chip-en="How much solar energy does the station generate?" data-i18n="chipSolarEnergy" onclick="sendChipI18n(this)">☀️ Energía solar</button>
+                    <button class="chip" data-chip-es="¿Qué tipo de conectores tienen las bahías?" data-chip-en="What type of connectors do the bays have?" data-i18n="chipConnectors" onclick="sendChipI18n(this)">🔌 Conectores</button>
+                    <button class="chip" data-chip-es="¿Cuánto cuesta cargar mi vehículo?" data-chip-en="How much does it cost to charge my vehicle?" data-i18n="chipCost" onclick="sendChipI18n(this)">💰 ¿Cuánto cuesta?</button>
+                    <button class="chip" data-chip-es="¿Cuál es el horario de la estación?" data-chip-en="What are the station's hours?" data-i18n="chipSchedule" onclick="sendChipI18n(this)">🕐 Horario</button>
+                    <button class="chip" data-chip-es="¿Dónde queda la estación de carga?" data-chip-en="Where is the charging station located?" data-i18n="chipLocation" onclick="sendChipI18n(this)">📍 Ubicación</button>
+                    <button class="chip" data-chip-es="¿Cuánto tarda en cargar completamente mi vehículo?" data-chip-en="How long does it take to fully charge my vehicle?" data-i18n="chipTotalTime" onclick="sendChipI18n(this)">🔋 Tiempo de carga</button>
+                    <button class="chip" data-chip-es="¿Es seguro dejar mi vehículo cargando?" data-chip-en="Is it safe to leave my vehicle charging?" data-i18n="chipSecurity" onclick="sendChipI18n(this)">🔒 Seguridad</button>
+                    <button class="chip support-chip" onclick="requestAdminSupport()" data-i18n="chipAdmin">👨‍💼 Hablar con admin</button>
+                </div>
+
+            </section>
+
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
+            <button class="nav-button active" data-page="home" aria-label="Inicio - Ver bahías de carga" aria-current="page">
+                <div class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></div>
+                <span data-i18n="home">Inicio</span>
+            </button>
+
+
+
+            <button class="nav-button" data-page="qr" aria-label="Mi Código QR de reserva">
+                <div class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><path d="M7 7h1v1H7zM16 7h1v1h-1zM7 16h1v1H7zM16 16h1v1h-1z"></path></svg></div>
+                <span data-i18n="myQR">Mi QR</span>
+                <div id="qrBadge" class="badge hidden" aria-hidden="true"></div>
+            </button>
+
+            <button class="nav-button" data-page="location" aria-label="Ubicación de la estación">
+                <div class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg></div>
+                <span data-i18n="location">Ubicación</span>
+            </button>
+
+            <button class="nav-button" data-page="ai" aria-label="Asistente virtual RideBot">
+                <div class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></div>
+                <span data-i18n="chat">Chat</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- ================== ADMIN PANEL ================== -->
+    <div id="adminView" class="hidden admin-shell">
+
+        <!-- Admin Top Bar -->
+        <header class="admin-topbar">
+            <div class="admin-topbar-brand">
+                <div class="admin-logo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+                <div>
+                    <strong>ELECTRA — Panel Admin</strong>
+                    <small id="adminUserName"></small>
+                </div>
+            </div>
+            <button class="admin-logout-btn" onclick="adminLogout()">Cerrar sesión 🚪</button>
+        </header>
+
+        <!-- Admin Notification Toast -->
+        <div id="adminNotification" class="admin-toast hidden"></div>
+
+        <main class="admin-content" style="padding-top: 20px;">
+
+            <!-- SECTION: Reservations -->
+            <div id="adminTab_reservations" class="admin-tab-content" style="margin-bottom: 40px;">
+                <div class="admin-section-header">
+                    <h2>🗓️ Reservas activas</h2>
+                    <button class="admin-refresh-btn" onclick="loadAdminReservations()">↺ Actualizar</button>
+                </div>
+                <p style="color:var(--muted); font-size:13px; margin-top:0;">Puedes ver quién tiene una reserva y cancelarla para liberar la bahía inmediatamente.</p>
+                <div id="adminReservationsList"></div>
+            </div>
+
+            <!-- SECTION: Bays -->
+            <div id="adminTab_bays" class="admin-tab-content" style="margin-bottom: 40px;">
+                <div class="admin-section-header">
+                    <h2>⚡ Estado de bahías</h2>
+                    <button class="admin-refresh-btn" onclick="loadAdminBays()">↺ Actualizar</button>
+                </div>
+                <div id="adminBaysList" class="admin-bays-pills"></div>
+            </div>
+
+            <!-- SECTION: Users -->
+            <div id="adminTab_users" class="admin-tab-content" style="margin-bottom: 40px;">
+                <div class="admin-section-header">
+                    <h2>👥 Usuarios registrados</h2>
+                    <button class="admin-refresh-btn" onclick="loadAdminUsers()">↺ Actualizar</button>
+                </div>
+                <div id="adminUsersList" style="display: flex; flex-direction: column; gap: 10px;"></div>
+            </div>
+
+            <!-- SECTION: Support Chat -->
+            <div id="adminTab_support" class="admin-tab-content" style="margin-bottom: 40px;">
+                <div class="admin-section-header">
+                    <h2>💬 Soporte en vivo</h2>
+                </div>
+                <div class="admin-support-layout">
+
+                    <!-- Sidebar: room list -->
+                    <div class="admin-support-sidebar">
+                        <h3>Solicitudes</h3>
+                        <div id="adminSupportRooms"></div>
+                    </div>
+
+                    <!-- Chat pane -->
+                    <div class="admin-support-chat-pane">
+                        <div id="adminSupportChat" class="hidden">
+                            <div class="admin-chat-header">
+                                <strong id="adminChatHeader">Selecciona una conversación</strong>
+                                <button class="admin-close-chat" onclick="adminCloseRoom()">✕ Cerrar sesión</button>
+                            </div>
+                            <div id="adminChatMessages" class="admin-chat-messages"></div>
+                            <div class="admin-chat-input-row">
+                                <input type="text" id="adminChatInput" placeholder="Escribe una respuesta..." onkeydown="if(event.key==='Enter') adminSendMessage()">
+                                <button onclick="adminSendMessage()" class="admin-send-btn">Enviar ➤</button>
+                            </div>
+                        </div>
+                        <div id="adminSupportEmpty" class="admin-support-empty">
+                            <div style="font-size:48px">💬</div>
+                            <p>Selecciona una conversación del panel izquierdo para responder.</p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- SECTION: QR de Puertos -->
+            <div id="adminTab_qr" class="admin-tab-content" style="margin-bottom: 40px;">
+                <div class="admin-section-header">
+                    <h2>🔲 QR de Puertos</h2>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="admin-refresh-btn" onclick="loadAdminQRCodes()">↺ Actualizar</button>
+                        <button class="admin-refresh-btn" onclick="printAllQRCodes()" style="background: var(--green); color: white; border-color: var(--green);">🖨️ Imprimir todos</button>
+                    </div>
+                </div>
+                <p style="color:var(--muted); font-size:13px; margin-top:0;">Cada puerto tiene su propio QR. Los usuarios lo escanean para reservar o confirmar su llegada. Imprime y pégalos en cada punto de carga.</p>
+                <div id="adminQRGrid" class="admin-qr-grid">
+                    <div class="admin-loading">⏳ Cargando QR de puertos...</div>
+                </div>
+            </div>
+
+
+
+            <!-- SECTION: Developer Options -->
+
+            <div id="adminTab_dev" class="admin-tab-content" style="margin-bottom: 20px;">
+                <div class="admin-section-header">
+                    <h2>🛠️ Opciones de desarrollador</h2>
+                </div>
+                <div class="dev-options-grid" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap:20px;">
+                    
+                    <div class="dev-card" style="background:var(--card); padding:20px; border-radius:12px; border:1px solid var(--border);">
+                        <h3 style="margin-top:0;">🔧 Controles de Sistema</h3>
+                        <button class="primary-button" style="margin-bottom:10px; width:100%; background:var(--green-light); color:var(--text);" onclick="alert('Caché limpiada exitosamente.')">Limpiar Caché Local</button>
+                        <button class="primary-button" style="margin-bottom:10px; width:100%; background:var(--green-light); color:var(--text);" onclick="socket.disconnect(); setTimeout(() => socket.connect(), 1000);">Forzar Reconexión Socket</button>
+                        <button class="danger-button" style="width:100%;" onclick="throw new Error('Simulación de error crítico del sistema.')">Generar Error de Prueba</button>
+                    </div>
+
+                    <div class="dev-card" style="background:var(--card); padding:20px; border-radius:12px; border:1px solid var(--border);">
+                        <h3 style="margin-top:0;">📡 Estado de Red</h3>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                            <span style="color:var(--muted)">WebSocket:</span>
+                            <strong style="color:#16a34a">Conectado (WSS)</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                            <span style="color:var(--muted)">Latencia promedio:</span>
+                            <strong>24 ms</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                            <span style="color:var(--muted)">API Core:</span>
+                            <strong>v1.0.4 - Activa</strong>
+                        </div>
+                        <div style="display:flex; justify-content:space-between;">
+                            <span style="color:var(--muted)">Entorno:</span>
+                            <strong style="color:var(--red)">Producción</strong>
+                        </div>
+                    </div>
+
+                    <div class="dev-card" style="grid-column: 1 / -1; background:var(--card); padding:20px; border-radius:12px; border:1px solid var(--border);">
+                        <h3 style="margin-top:0;">📝 Registro de Consola (System Logs)</h3>
+                        <div id="devConsole" style="background:#0f172a; padding:15px; border-radius:8px; height:180px; overflow-y:auto; font-family:monospace; font-size:13px; color:#f1f5f9;">
+                            <div style="color:#60a5fa">[SYS] Servidor ELECTRA Node.js inicializado.</div>
+                            <div style="color:#60a5fa">[DB] SQLite base de datos en memoria sincronizada.</div>
+                            <div style="color:#16a34a">[NET] Socket.IO montado en puerto 3000.</div>
+                            <div style="color:#f59e0b">[WARN] Se ha detectado una latencia de 120ms en auth.</div>
+                            <!-- Dinámico -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- ================== QR SCANNER OVERLAY ================== -->
+    <div id="checkinScannerOverlay" class="scanner-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Escáner QR de llegada">
+        <div class="scanner-card">
+            <div class="scanner-header">
+                <h3 data-i18n="confirmArrivalTitle">Confirmar llegada</h3>
+                <button id="closeScannerBtn" class="close-button" aria-label="Cerrar escáner" onclick="closeCheckinScanner()">×</button>
+            </div>
+
+            <p class="scanner-instructions" data-i18n="scannerInstructions">
+                Apunta la cámara al código QR en el punto de carga.
+            </p>
+
+            <!-- Camera area -->
+            <div class="scanner-viewport">
+                <div id="qrReaderElement"></div>
+                <div class="scanner-corners">
+                    <span class="corner tl"></span>
+                    <span class="corner tr"></span>
+                    <span class="corner bl"></span>
+                    <span class="corner br"></span>
+                </div>
+            </div>
+
+            <p id="scannerStatusText" class="scanner-status" data-i18n="startingCamera">Iniciando cámara...</p>
+
+            <!-- Manual fallback (shown on iOS or camera failure) -->
+            <div id="scannerFallback" class="hidden" style="width:100%;">
+                <label data-i18n="manualCodeLabel" style="font-size:13px; color: var(--muted); display:block; margin-bottom:6px;">Código de la bahía (ej: ELECTRA-BAY-A1)</label>
+                <input type="text" id="manualCodeInput" placeholder="ELECTRA-BAY-A1" style="text-transform:uppercase; letter-spacing:1px;">
+                <button id="manualSubmitBtn" class="primary-button" style="margin-top:10px;" onclick="submitManualCode()" data-i18n="confirmArrivalManual">Confirmar llegada</button>
+            </div>
+
+            <button class="link-button" style="margin-top: 8px; font-size:13px;" onclick="closeCheckinScanner()" data-i18n="cancel">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- ACCESSIBILITY MODAL -->
+    <div id="accessibilityModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Opciones de accesibilidad">
+        <div class="modal-card">
+            <button id="closeAccessibility" class="close-button" aria-label="Cerrar modal">×</button>
+
+            <h3 data-i18n="accessibilityTitle">Opciones de accesibilidad</h3>
+
+            <label data-i18n="textSize">Tamaño de texto</label>
+            <div class="access-options">
+                <button id="fontIncrease" aria-label="Aumentar tamaño de letra">A+</button>
+                <button id="fontDecrease" aria-label="Reducir tamaño de letra">A-</button>
+                <button id="fontReset" aria-label="Restaurar tamaño de letra">A (Normal)</button>
+            </div>
+
+            <br>
+            <label data-i18n="colorContrast">Contraste de color</label>
+            <div class="access-options">
+                <button data-theme="normal" aria-label="Modo de color normal" data-i18n="normalMode">Normal</button>
+                <button data-theme="high-dark" aria-label="Modo alto contraste oscuro" data-i18n="highContrastDark">Alto Contraste (Oscuro)</button>
+                <button data-theme="high-light" aria-label="Modo alto contraste claro" data-i18n="highContrastLight">Alto Contraste (Claro)</button>
+            </div>
+
+            <br>
+            <label data-i18n="voiceAssistant">Asistente de voz (Lectura en voz alta)</label>
+            <div class="access-options" style="margin-top: 5px;">
+                <button id="voiceOnBtn" aria-label="Activar asistente de voz" data-i18n="enableVoice">🔊 Activar Voz</button>
+                <button id="voiceOffBtn" aria-label="Desactivar asistente de voz" data-i18n="muteVoice">🔇 Silenciar</button>
+            </div>
+
+            <br>
+            <label data-i18n="screenReader">Lector de pantalla manual</label>
+            <button id="readInterface" class="primary-button" style="margin-top: 5px" data-i18n="readScreen">Leer pantalla actual (Audio)</button>
+        </div>
+    </div>
+
+    <!-- Reservation Confirmation Modal -->
+    <div id="reservationModal" class="rn-modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
+        <div class="rn-modal-backdrop" onclick="closeReservationModal()"></div>
+        <div class="rn-modal-card">
+            <div class="rn-modal-icon success" id="modalIconEl" aria-hidden="true">✓</div>
+            <h2 id="modalTitle" class="rn-modal-title">¡Reserva confirmada!</h2>
+            <p id="modalDesc" class="rn-modal-desc">Tu bahía ha sido reservada exitosamente.</p>
+            <div id="modalDetails" class="rn-modal-details"></div>
+            <div class="rn-modal-actions">
+                <button id="modalPrimaryBtn" class="rn-modal-btn primary" onclick="closeReservationModal()">Ver mi QR</button>
+                <button class="rn-modal-btn secondary" onclick="closeReservationModal()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancel Reservation Modal -->
+    <div id="cancelModal" class="rn-modal hidden" role="dialog" aria-modal="true" aria-labelledby="cancelModalTitle">
+        <div class="rn-modal-backdrop" onclick="closeCancelModal()"></div>
+        <div class="rn-modal-card">
+            <div class="rn-modal-icon danger" aria-hidden="true">⚠️</div>
+            <h2 id="cancelModalTitle" class="rn-modal-title">¿Cancelar reserva?</h2>
+            <p class="rn-modal-desc">Esta acción liberará tu bahía y no se puede deshacer.</p>
+            <div class="rn-modal-actions">
+                <button id="cancelConfirmBtn" class="rn-modal-btn danger">Sí, cancelar</button>
+                <button class="rn-modal-btn secondary" onclick="closeCancelModal()">Volver</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/i18n.js?v=2"></script>
+    <script src="/js/accessibility.js?v=2"></script>
+    <script src="/js/auth.js?v=2"></script>
+    <script src="/js/reservations.js?v=2"></script>
+    <script src="/js/checkin.js?v=2"></script>
+    <script src="/js/ai.js?v=2"></script>
+    <script src="/js/admin.js?v=2"></script>
+    <script src="/js/geo.js?v=2"></script>
+
+    <script src="/js/app.js?v=2"></script>
+
+    <!-- PWA Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('[PWA] Service Worker registrado:', reg.scope))
+                    .catch(err => console.warn('[PWA] SW error:', err));
+            });
+        }
+    </script>
+
+</body>
+</html>

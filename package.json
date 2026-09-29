@@ -1,0 +1,11 @@
+{
+  "name": "solcarga",
+  "version": "1.0.0",
+  "description": "SolCarga / RideNow App",
+  "main": "backend/server.js",
+  "scripts": {
+    "postinstall": "cd backend && npm install",
+    "start": "node backend/server.js"
+  },
+  "dependencies": {}
+}
