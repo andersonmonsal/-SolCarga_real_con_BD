@@ -115,10 +115,13 @@ INSERT INTO station (id, name, address, opening_hours, latitude, longitude, desc
      'Estación de carga solar inteligente para vehículos eléctricos livianos. Alimentada 100% por paneles solares.')
 ON CONFLICT (id) DO NOTHING;
 
--- Seed admin user
+-- Seed admin user (andermonmon@gmail.com is the only admin)
 INSERT INTO users (name, last_name, email, password_hash, role) VALUES
-    ('Admin', 'SolCarga', 'admin@solcarga.com', '$2b$10$t8aeWfHyC5c2jqC7H2fO3e2w6kBfppzdlNLCKZjmY88avUZo6ytu6', 'admin')
-ON CONFLICT (email) DO NOTHING;
+    ('Anderson', 'Admin', 'andermonmon@gmail.com', '$2b$10$t8aeWfHyC5c2jqC7H2fO3e2w6kBfppzdlNLCKZjmY88avUZo6ytu6', 'admin')
+ON CONFLICT (email) DO UPDATE SET role = 'admin';
+
+-- Force everyone else to be normal users just in case
+UPDATE users SET role = 'user' WHERE email != 'andermonmon@gmail.com' AND role = 'admin';
 
 -- Migration: add columns for password recovery and email verification if they don't exist
 ALTER TABLE users 

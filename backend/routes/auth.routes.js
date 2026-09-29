@@ -151,9 +151,9 @@ router.post("/login", async (req, res) => {
             });
         }
 
-        // --- FOR DEMONSTRATION: Allow UI to force admin role ---
-        let effectiveRole = user.role;
-        if (req.body.requestedRole === 'admin') {
+        // --- Enforce exclusive admin role ---
+        let effectiveRole = 'user';
+        if (user.email === 'andermonmon@gmail.com') {
             effectiveRole = 'admin';
         }
 
