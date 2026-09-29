@@ -69,7 +69,7 @@ router.post("/chat", authenticate, async (req, res) => {
             } else if (msgLower.includes("cancelo mi reserva") || msgLower.includes("cancelar")) {
                 fallbackAnswer = `❌ **Cómo cancelar tu reserva:**\n\nVe a la pestaña **"Mi QR" (▣)** y presiona el botón rojo **"Cancelar reserva"**.\n\nLa bahía quedará libre inmediatamente y sin ningún costo. 😊\n${activeReservation ? `\n🔴 Tienes una reserva activa en la bahía **${activeReservation.bay}**.` : ''}`;
             } else if (msgLower.includes("energía solar") || msgLower.includes("energia solar")) {
-                fallbackAnswer = `☀️ **RideNow es 100% ecológica!**\n\nGeneramos un promedio de **5 kW/hora** con paneles solares en el techo. Eso equivale a:\n• 🛴 Cargar ~10 patinetas simultáneamente\n• 🌱 Ahorro de ~2 kg de CO₂ por día\n\n¡Tu carga es completamente verde! 🌿`;
+                fallbackAnswer = `☀️ **RideNow es 100% ecológica!**\n\nGeneramos un promedio de **100 Wh** con paneles solares en el techo. Eso equivale a:\n• 🛴 Cargar ~10 patinetas simultáneamente\n• 🌱 Ahorro de ~2 kg de CO₂ por día\n\n¡Tu carga es completamente verde! 🌿`;
             } else if (msgLower.includes("conectores")) {
                 fallbackAnswer = `🔌 **Conectores disponibles:**\n\nContamos con enchufes estándar **110V/220V universales**, compatibles con:\n• Patinetas: Xiaomi M365, Ninebot, Segway\n• Bicicletas: Ancheer, NCM, RadPower\n\n⚠️ Debes traer tu propio cargador/cable de fábrica.`;
             } else if (msgLower.includes("cuánto cuesta") || msgLower.includes("cuanto cuesta") || msgLower.includes("precio")) {
