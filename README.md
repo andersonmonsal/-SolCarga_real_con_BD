@@ -48,7 +48,7 @@ RideNow es una plataforma moderna para gestionar estaciones de carga de vehícul
    ```bash
    docker-compose up -d
    ```
-2. Abre en tu navegador: `http://localhost:3000`
+2. Abre en tu navegador: `https://solcarga-app.onrender.com/`
 
 ##  Usuarios de Prueba
 
