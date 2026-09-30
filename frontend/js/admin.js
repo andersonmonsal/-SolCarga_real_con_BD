@@ -211,11 +211,35 @@ async function loadAdminUsers() {
                     <div style="color:var(--muted); font-size:14px; margin-top:4px;">✉️ ${u.email}</div>
                     <div style="color:var(--muted); font-size:13px; margin-top:2px;">🚗 ${u.vehicle_type} • 🗓️ ${new Date(u.created_at).toLocaleDateString()}</div>
                 </div>
+                <button
+                    onclick="deleteUserFromAdmin(${u.id}, '${u.name} ${u.last_name || ''}')"
+                    style="padding:8px 14px; border-radius:8px; border:1px solid var(--red); background:transparent; color:var(--red); font-size:13px; font-weight:600; cursor:pointer;"
+                    title="Eliminar cuenta de ${u.name}"
+                >🗑️ Eliminar</button>
             </div>
         `).join("");
 
     } catch (err) {
         container.innerHTML = "<small style='color:var(--muted)'>Error cargando usuarios</small>";
+    }
+}
+
+async function deleteUserFromAdmin(userId, userName) {
+    if (!confirm(`¿Eliminar la cuenta de "${userName}"? Esta acción no se puede deshacer.`)) return;
+    try {
+        const res = await fetch(`/api/auth/users/${userId}`, {
+            method: "DELETE",
+            headers: { "Authorization": `Bearer ${getToken()}` }
+        });
+        if (res.ok) {
+            showAdminNotification(`✅ Cuenta de ${userName} eliminada`);
+            loadAdminUsers();
+        } else {
+            const data = await res.json();
+            showAdminNotification(`⚠️ ${data.error || "Error eliminando cuenta"}`);
+        }
+    } catch (err) {
+        showAdminNotification("⚠️ Error de conexión");
     }
 }
 

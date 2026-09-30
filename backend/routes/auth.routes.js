@@ -342,4 +342,18 @@ router.delete("/me", authenticate, async (req, res) => {
     }
 });
 
+// DELETE /users/:id — Admin deletes any user account
+router.delete("/users/:id", authenticate, requireAdmin, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const user = await get("SELECT id FROM users WHERE id = $1", [id]);
+        if (!user) return res.status(404).json({ error: "Usuario no encontrado" });
+        await run("DELETE FROM users WHERE id = $1", [id]);
+        res.json({ message: "Cuenta eliminada correctamente" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error eliminando cuenta" });
+    }
+});
+
 module.exports = router;
