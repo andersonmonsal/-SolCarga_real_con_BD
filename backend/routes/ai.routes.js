@@ -77,7 +77,7 @@ router.post("/chat", authenticate, async (req, res) => {
             } else if (msgLower.includes("horario") || msgLower.includes("hora")) {
                 fallbackAnswer = `🕐 **Horario de operación:**\n\n📅 **Lunes a Viernes:** 5:00 AM — 10:00 PM\n📅 **Sábados:** 8:00 AM — 6:00 PM\n❌ **Domingos y festivos:** Cerrado (mantenimiento)\n\n⚡ Actualmente quedan **${available.length} bahías disponibles**.`;
             } else if (msgLower.includes("ubicación") || msgLower.includes("ubicacion") || msgLower.includes("dónde") || msgLower.includes("donde")) {
-                fallbackAnswer = `📍 **Ubicación de RideNow:**\n\nEstamos en la **zona norte del campus**, junto al edificio de parqueaderos (Bloque 4), bajo los paneles solares.\n\n🗺️ Puedes ver el mapa exacto en la pestaña **"Ubicación"** de la app.`;
+                fallbackAnswer = `📍 **Ubicación de RideNow:**\n\nEstamos en la **zona norte del campus**, junto al edificio de parqueaderos (Bloque 7), bajo los paneles solares.\n\n🗺️ Puedes ver el mapa exacto en la pestaña **"Ubicación"** de la app.`;
             } else if (msgLower.includes("tiempo total de carga") || msgLower.includes("tarda en cargar") || msgLower.includes("batería")) {
                 fallbackAnswer = `🔋 **Tiempos de carga completa:**\n\n🛴 Patineta (ej. Xiaomi M365): **3 a 5 horas** (0% → 100%)\n🚲 Bicicleta eléctrica: **4 a 6 horas** (0% → 100%)\n\n💡 Tip: Conectar con batería al 20-30% prolonga la vida útil.`;
             } else if (msgLower.includes("segur") || msgLower.includes("robo") || msgLower.includes("candado")) {

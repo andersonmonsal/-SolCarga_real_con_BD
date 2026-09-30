@@ -2,7 +2,7 @@ let fontSize = Number(localStorage.getItem("RideNow_font_size")) || 100;
 let voiceEnabled = localStorage.getItem("RideNow_voice") === "true";
 
 function applyFontSize() {
-    document.documentElement.style.setProperty("--font-scale", `${fontSize}%`);
+    document.documentElement.style.zoom = `${fontSize}%`;
     localStorage.setItem("RideNow_font_size", fontSize);
 }
 
