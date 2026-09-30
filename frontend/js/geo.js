@@ -1,22 +1,11 @@
-// ============================================
-// RideNow — GPS Proximity Detection
-// Station: Universidad de Medellín
-// Coords: 6.223030, -75.611117
-// ============================================
-
 const STATION_LAT  = 6.231435;
 const STATION_LNG  = -75.612030;
-const PROXIMITY_RADIUS_M = 300; // meters
-
+const PROXIMITY_RADIUS_M = 300; 
 let geoWatchId = null;
 let proximityBannerVisible = false;
-let lastProximityState = null; // 'near' | 'far' | null
-
-/**
- * Haversine formula — distance between two lat/lng points in meters.
- */
+let lastProximityState = null; 
 function haversineDistance(lat1, lon1, lat2, lon2) {
-    const R = 6371000; // Earth radius in meters
+    const R = 6371000; 
     const toRad = deg => deg * Math.PI / 180;
     const dLat = toRad(lat2 - lat1);
     const dLon = toRad(lon2 - lon1);
@@ -25,16 +14,9 @@ function haversineDistance(lat1, lon1, lat2, lon2) {
               Math.sin(dLon / 2) ** 2;
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
-
-/**
- * Start watching GPS position. Called once after login.
- */
 function startGeoWatch() {
     if (!navigator.geolocation) return;
-
-    // Only start if not already watching
     if (geoWatchId !== null) return;
-
     geoWatchId = navigator.geolocation.watchPosition(
         onPositionUpdate,
         onPositionError,
@@ -45,10 +27,6 @@ function startGeoWatch() {
         }
     );
 }
-
-/**
- * Stop watching GPS (called on logout).
- */
 function stopGeoWatch() {
     if (geoWatchId !== null) {
         navigator.geolocation.clearWatch(geoWatchId);
@@ -56,17 +34,14 @@ function stopGeoWatch() {
     }
     hideProximityBanner();
 }
-
 function onPositionUpdate(position) {
     const { latitude, longitude } = position.coords;
     const dist = haversineDistance(latitude, longitude, STATION_LAT, STATION_LNG);
-
     if (dist <= PROXIMITY_RADIUS_M) {
         if (lastProximityState !== 'near') {
             lastProximityState = 'near';
             showProximityBanner(Math.round(dist));
         } else {
-            // Update distance in banner
             updateProximityBannerDistance(Math.round(dist));
         }
     } else {
@@ -76,19 +51,11 @@ function onPositionUpdate(position) {
         }
     }
 }
-
 function onPositionError(err) {
-    // Silently ignore; GPS not available or denied
     console.warn('[GEO] GPS error:', err.message);
 }
-
-// ============================================
-// PROXIMITY BANNER UI
-// ============================================
-
 function createProximityBanner() {
     if (document.getElementById('proximityBanner')) return;
-
     const banner = document.createElement('div');
     banner.id = 'proximityBanner';
     banner.style.cssText = `
@@ -112,7 +79,6 @@ function createProximityBanner() {
         cursor: pointer;
         user-select: none;
     `;
-
     banner.innerHTML = `
         <div style="font-size: 32px; flex-shrink:0;">📍</div>
         <div style="flex:1; min-width:0;">
@@ -132,63 +98,47 @@ function createProximityBanner() {
             flex-shrink:0;
         " aria-label="Close">✕</button>
     `;
-
     document.body.appendChild(banner);
-
-    // Clicking the banner (not close) goes to home to show bays
     banner.addEventListener('click', (e) => {
         if (e.target.id === 'proximityBannerClose') {
-            hideProximityBanner(true); // manual dismiss — don't re-show until next session
+            hideProximityBanner(true); 
             return;
         }
         if (typeof showPage === 'function') showPage('home');
     });
-
     return banner;
 }
-
 function showProximityBanner(distMeters) {
     if (proximityBannerVisible) return;
-
     const banner = createProximityBanner();
     if (!banner) return;
-
     updateProximityBannerText(distMeters);
-
     proximityBannerVisible = true;
     requestAnimationFrame(() => {
         banner.style.opacity = '1';
         banner.style.transform = 'translateX(-50%) translateY(0)';
     });
-
-    // Auto-hide after 8 seconds
     clearTimeout(banner._autoHideTimer);
     banner._autoHideTimer = setTimeout(() => hideProximityBanner(), 8000);
 }
-
 function updateProximityBannerDistance(distMeters) {
     updateProximityBannerText(distMeters);
 }
-
 function updateProximityBannerText(distMeters) {
     const titleEl = document.getElementById('proximityBannerTitle');
     const subEl   = document.getElementById('proximityBannerSub');
     if (!titleEl || !subEl) return;
-
     const isEn = typeof currentLanguage !== 'undefined' && currentLanguage === 'en';
     const distLabel = distMeters < 50
         ? (isEn ? 'You are here!' : '¡Estás aquí!')
         : (isEn ? `${distMeters} m away` : `A ${distMeters} m`);
-
     titleEl.textContent = isEn
         ? '📡 RideNow Station nearby!'
         : '📡 ¡Estación RideNow cercana!';
-
     subEl.textContent = isEn
         ? `${distLabel} — Tap to reserve or check in`
         : `${distLabel} — Toca para reservar o confirmar llegada`;
 }
-
 function hideProximityBanner(permanent = false) {
     const banner = document.getElementById('proximityBanner');
     if (banner) {
@@ -200,21 +150,12 @@ function hideProximityBanner(permanent = false) {
         }, 350);
     }
     proximityBannerVisible = false;
-    if (permanent) lastProximityState = 'far'; // prevent re-show in same session
+    if (permanent) lastProximityState = 'far'; 
 }
-
-// ============================================
-// LOCATION SECTION — live distance display
-// ============================================
-
-/**
- * Show/update the user's live distance in the Location section.
- */
 function updateLocationSectionGPS(distMeters) {
     const el = document.getElementById('gpsDistanceInfo');
     if (!el) return;
     const isEn = typeof currentLanguage !== 'undefined' && currentLanguage === 'en';
-
     if (distMeters <= PROXIMITY_RADIUS_M) {
         el.innerHTML = `<span style="color:#16a34a; font-weight:700;">
             ✅ ${isEn ? 'You are at the station!' : '¡Estás en la estación!'}
@@ -226,11 +167,8 @@ function updateLocationSectionGPS(distMeters) {
         </span>`;
     }
 }
-
-// Re-translate banner text when language changes
 document.addEventListener('languageChanged', () => {
     if (proximityBannerVisible) {
-        // Refresh text in current banner
         const titleEl = document.getElementById('proximityBannerTitle');
         const subEl   = document.getElementById('proximityBannerSub');
         if (titleEl && subEl) updateProximityBannerText(null);

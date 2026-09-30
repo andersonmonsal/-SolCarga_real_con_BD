@@ -1,10 +1,4 @@
-// ============================================
-// RideNow — Parqueaderos de Carros (Sensores)
-// Tiempo real via Socket.IO
-// ============================================
-
 let carSpotsData = [];
-
 async function loadCarSpots() {
     try {
         const response = await fetch("/api/car-spots");
@@ -16,29 +10,21 @@ async function loadCarSpots() {
         console.error("Error cargando parqueaderos:", err);
     }
 }
-
 function renderCarSpots(data) {
     const container = document.getElementById("carSpotsContainer");
     if (!container) return;
-
     const { spots = [], zones = {}, summary = {} } = data;
-
     const freeCount = summary.free ?? spots.filter(s => s.status === "free").length;
     const total = summary.total ?? spots.length;
-
-    // Update counter
     const counter = document.getElementById("carSpotsCount");
     if (counter) {
         counter.textContent = `${freeCount} / ${total}`;
         counter.className = freeCount === 0 ? "car-spots-badge full" : "car-spots-badge";
     }
-
-    // Render zones
     const zoneNames = Object.keys(zones);
     container.innerHTML = zoneNames.map(zoneName => {
         const zoneSpots = zones[zoneName];
         const zoneFree = zoneSpots.filter(s => s.status === "free").length;
-
         return `
         <div class="car-zone" role="region" aria-label="Zona de parqueadero ${zoneName}">
             <div class="car-zone-header">
@@ -56,25 +42,21 @@ function renderCarSpots(data) {
         `;
     }).join("");
 }
-
 function renderCarSpot(spot) {
     const statusLabel = {
         free:        "🟢 Libre",
         occupied:    "🔴 Ocupado",
         maintenance: "🔧 Mantenimiento"
     }[spot.status] || "⚪ Desconocido";
-
     const statusClass = {
         free:        "spot-free",
         occupied:    "spot-occupied",
         maintenance: "spot-maintenance"
     }[spot.status] || "";
-
     const sensorIcon = spot.sensor_active ? "📡" : "📵";
     const lastUpdate = spot.last_updated
         ? new Date(spot.last_updated).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" })
         : "--:--";
-
     return `
     <div class="car-spot ${statusClass}" 
          id="car-spot-${spot.id}"
@@ -99,26 +81,19 @@ function renderCarSpot(spot) {
     </div>
     `;
 }
-
-// Update a single spot in real time when sensor fires
 function updateCarSpotById(spotId, code, zone, status) {
     carSpotsData = carSpotsData.map(s => s.id === spotId ? { ...s, status, last_updated: new Date().toISOString() } : s);
-
-    // Re-render full view from updated data
     const freeCount = carSpotsData.filter(s => s.status === "free").length;
     const zones = {};
     carSpotsData.forEach(spot => {
         if (!zones[spot.zone]) zones[spot.zone] = [];
         zones[spot.zone].push(spot);
     });
-
     renderCarSpots({
         spots: carSpotsData,
         zones,
         summary: { total: carSpotsData.length, free: freeCount, occupied: carSpotsData.filter(s => s.status === "occupied").length }
     });
-
-    // Flash animation on specific spot
     setTimeout(() => {
         const el = document.getElementById(`car-spot-${spotId}`);
         if (el) {
@@ -127,9 +102,6 @@ function updateCarSpotById(spotId, code, zone, status) {
         }
     }, 50);
 }
-
-// Listen for real-time sensor updates via Socket.IO
-// (called from app.js after socket is initialized)
 function initCarSpotsSocket(socket) {
     socket.on("carSpotUpdated", ({ spotId, code, zone, status }) => {
         updateCarSpotById(spotId, code, zone, status);

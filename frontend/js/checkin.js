@@ -1,20 +1,11 @@
-// ============================================
-// RideNow — QR Check-in (Confirmación de llegada)
-// ============================================
-
 let html5QrCodeInstance = null;
 let scannerActive = false;
-
-// Detect iOS Safari
 const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
 function openCheckinScanner(mode = 'checkin') {
     window.scannerMode = mode;
     const overlay = document.getElementById("checkinScannerOverlay");
     if (!overlay) return;
-
-    // Set texts based on mode
     const headerTitle = overlay.querySelector('.scanner-header h3');
     const instructions = overlay.querySelector('.scanner-instructions');
     const manualBtn = document.getElementById("manualSubmitBtn");
@@ -27,21 +18,16 @@ function openCheckinScanner(mode = 'checkin') {
         if (instructions) instructions.textContent = typeof t === 'function' ? t('scanToCheckinInstructions') : 'Apunta la cámara al código QR en el punto de carga para iniciar la carga.';
         if (manualBtn) manualBtn.textContent = typeof t === 'function' ? t('confirmArrivalManual') : 'Confirmar llegada';
     }
-
-    // Fix: use visibility+opacity instead of just display:none for animation
     overlay.style.display = "flex";
     requestAnimationFrame(() => {
         overlay.classList.add("visible");
     });
-
-    // Show fallback input by default on iOS Safari (camera QR often unreliable)
     if (isIOS && isSafari) {
         setTimeout(() => showManualFallback(), 300);
     } else {
         setTimeout(() => startQRScanner(), 350);
     }
 }
-
 function closeCheckinScanner() {
     stopQRScanner();
     const overlay = document.getElementById("checkinScannerOverlay");
@@ -50,46 +36,36 @@ function closeCheckinScanner() {
         setTimeout(() => { overlay.style.display = "none"; }, 320);
     }
 }
-
 async function startQRScanner() {
     const readerEl = document.getElementById("qrReaderElement");
     if (!readerEl) return;
-
     if (typeof Html5Qrcode === "undefined") {
         showManualFallback("La librería de escaneo no cargó. Ingresa el código manualmente:");
         return;
     }
-
     if (html5QrCodeInstance) {
         try { await html5QrCodeInstance.stop(); } catch (_) {}
         html5QrCodeInstance = null;
     }
     readerEl.innerHTML = "";
-
     try {
         html5QrCodeInstance = new Html5Qrcode("qrReaderElement");
-
-        // iOS needs more permissive constraints
         const cameraConstraints = isIOS
             ? { facingMode: { ideal: "environment" } }
             : { facingMode: "environment" };
-
         await html5QrCodeInstance.start(
             cameraConstraints,
             { fps: 10, qrbox: { width: 220, height: 220 }, aspectRatio: 1.0 },
             onQRScanned,
             () => {}
         );
-
         scannerActive = true;
         setScannerStatus(typeof t === 'function' ? t('scannerPointQR') : 'Apunta al QR del punto de carga');
-
     } catch (error) {
         console.warn("Cámara no disponible:", error);
         showManualFallback(typeof t === 'function' ? t('cameraError') : 'No se pudo acceder a la cámara. Ingresa el código manualmente:');
     }
 }
-
 async function stopQRScanner() {
     scannerActive = false;
     if (html5QrCodeInstance) {
@@ -102,14 +78,11 @@ async function stopQRScanner() {
     const readerEl = document.getElementById("qrReaderElement");
     if (readerEl) readerEl.innerHTML = "";
 }
-
 async function onQRScanned(decodedText) {
     if (!scannerActive) return;
     scannerActive = false;
-
     setScannerStatus("QR detectado... verificando ✓", "#4ade80");
     await stopQRScanner();
-
     try {
         if (window.scannerMode === 'book') {
             await handleBookingScan(decodedText);
@@ -124,26 +97,21 @@ async function onQRScanned(decodedText) {
         }, 2500);
     }
 }
-
 function showManualFallback(msg) {
     const readerEl = document.getElementById("qrReaderElement");
     if (readerEl) readerEl.innerHTML = "";
-
     const fallbackContainer = document.getElementById("scannerFallback");
     if (fallbackContainer) {
         fallbackContainer.classList.remove("hidden");
     }
-
     if (msg) setScannerStatus(msg);
 }
-
 function setScannerStatus(text, color) {
     const statusEl = document.getElementById("scannerStatusText");
     if (!statusEl) return;
     statusEl.textContent = text || "";
     statusEl.style.color = color || "";
 }
-
 async function submitManualCode() {
     const input = document.getElementById("manualCodeInput");
     if (!input) return;
@@ -152,10 +120,8 @@ async function submitManualCode() {
         setScannerStatus(typeof t === 'function' ? t('enterCodeError') : 'Ingresa el código del QR', "#ef4444");
         return;
     }
-
     const btn = document.getElementById("manualSubmitBtn");
     if (btn) { btn.disabled = true; btn.textContent = "Verificando..."; }
-
     try {
         if (window.scannerMode === 'book') {
             await handleBookingScan(code);
@@ -172,11 +138,9 @@ async function submitManualCode() {
         }
     }
 }
-
 async function confirmCheckin(scannedCode) {
     const token = getToken();
     if (!token) throw new Error("Sesión expirada. Inicia sesión de nuevo.");
-
     const response = await fetch("/api/reservations/checkin", {
         method: "POST",
         headers: {
@@ -185,16 +149,11 @@ async function confirmCheckin(scannedCode) {
         },
         body: JSON.stringify({ scannedCode })
     });
-
     const data = await response.json();
-
     if (!response.ok) {
         throw new Error(data.error || "Error confirmando llegada");
     }
-
     closeCheckinScanner();
-    
-    // Update points in frontend state
     if (data.pointsEarned) {
         const user = getUser();
         if (user) {
@@ -204,22 +163,17 @@ async function confirmCheckin(scannedCode) {
             if (badge) badge.textContent = `${user.points} Pts`;
         }
     }
-
     showCheckinSuccess(data.message, data.reservation);
     return data;
 }
-
 function showCheckinSuccess(message, reservation) {
     const container = document.getElementById("qrContainer");
     if (!container) return;
-
     const now = new Date();
     const timeStr = now.toLocaleString(currentLanguage === 'en' ? 'en-US' : 'es-CO');
     const user = getUser();
     const userName = user ? user.name : (typeof t === 'function' ? t('student') : 'Estudiante');
-
     const isEn = typeof currentLanguage !== 'undefined' && currentLanguage === 'en';
-
     container.innerHTML = `
         <div class="checkin-success-card" style="border: 2px dashed var(--green); background: var(--green-light);">
             <div class="checkin-checkmark">
@@ -233,7 +187,6 @@ function showCheckinSuccess(message, reservation) {
             </h3>
             <p style="font-weight: bold; font-size: 18px; margin: 0; color: var(--green); text-align: center;">${isEn ? 'Confirmed ✓' : 'Confirmado ✓'}</p>
             <p class="checkin-msg" style="margin-top: 10px;">${message}</p>
-            
             <div class="checkin-details" style="background: white; border: 1px solid var(--border); margin-top: 15px;">
                 <div class="checkin-detail-row">
                     <span>👤 ${isEn ? 'Student' : 'Estudiante'}</span>
@@ -263,7 +216,6 @@ function showCheckinSuccess(message, reservation) {
             </p>
         </div>
     `;
-
     if (typeof speak === "function") {
         speak(typeof t === 'function'
             ? (currentLanguage === 'en' ? 'Arrival confirmed! Your vehicle can start charging.' : '¡Llegada confirmada! Tu vehículo puede comenzar a cargarse.')
@@ -273,39 +225,28 @@ function showCheckinSuccess(message, reservation) {
         loadBays();
     }
 }
-
-// Handler for booking via scanner
 async function handleBookingScan(scannedCode) {
     const code = scannedCode.toUpperCase().trim();
-
-    // Extract bay code from old format, short format, or new URL format
     let bayCode = code;
     if (code.startsWith('RIDENOW-BAY-')) {
         bayCode = code.replace('RIDENOW-BAY-', '');
     } else if (code.includes('?BAHIA=')) {
         bayCode = code.split('?BAHIA=')[1].split('&')[0];
     }
-
-    // Fetch fresh bay data from server so status is always up to date
     let bay = null;
     try {
         const res = await fetch('/api/bays');
         const allBays = await res.json();
         bay = allBays.find(b => b.code === bayCode);
-        // Also update global bays array
         if (typeof bays !== 'undefined') bays = allBays;
     } catch (e) {
         throw new Error("No se pudo verificar el estado de la bahía. Revisa tu conexión.");
     }
-
     if (!bay) {
         throw new Error(`QR no reconocido. Código extraído: "${bayCode}". Código original escaneado: "${code}" no existe en el sistema.`);
     }
-
-    // Show bay info inside the scanner overlay before reserving
     const overlay = document.getElementById("checkinScannerOverlay");
     const card = overlay.querySelector(".scanner-card");
-
     const statusColor = { available: '#16a34a', reserved: '#d97706', occupied: '#dc2626', offline: '#6b7280' };
     const statusLabel = {
         available: typeof t === 'function' ? `🟢 ${t('statusAvailable')}` : '🟢 Disponible',
@@ -315,13 +256,11 @@ async function handleBookingScan(scannedCode) {
     };
     const vehicleIcon = bay.vehicle_type === 'Bicicleta' ? '🚲' : '🛴';
     const isEn = typeof currentLanguage !== 'undefined' && currentLanguage === 'en';
-
     card.innerHTML = `
         <div class="scanner-header">
             <h3>Información de la bahía</h3>
             <button class="close-button" onclick="closeCheckinScanner()">×</button>
         </div>
-
         <div style="text-align:center; padding: 10px 0 20px;">
             <div style="font-size: 56px; margin-bottom: 8px;">${vehicleIcon}</div>
             <div style="font-size: 32px; font-weight: 800; letter-spacing: 2px;">${bay.code}</div>
@@ -329,7 +268,6 @@ async function handleBookingScan(scannedCode) {
                 ${statusLabel[bay.status] || bay.status}
             </div>
         </div>
-
         <div style="background: var(--background, #f8fafc); border-radius: 12px; padding: 16px; margin-bottom: 20px; text-align: left;">
             <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border, #e5e7eb);">
                 <span style="color: var(--muted, #6b7280); font-size: 14px;">⚡ ${isEn ? 'Bay' : 'Bahía'}</span>
@@ -348,7 +286,6 @@ async function handleBookingScan(scannedCode) {
                 <strong style="color: ${statusColor[bay.status]};">${statusLabel[bay.status]}</strong>
             </div>
         </div>
-
         ${bay.status === 'available' ? `
             <button class="primary-button" style="margin-bottom: 10px;" onclick="closeCheckinScanner(); openReservation(window._scannedBay);">
                 ⚡ ${isEn ? 'Reserve this bay' : 'Reservar esta bahía'}
@@ -361,8 +298,5 @@ async function handleBookingScan(scannedCode) {
         `}
         <button class="link-button" style="width: 100%; text-align: center;" onclick="closeCheckinScanner()">${isEn ? 'Cancel' : 'Cancelar'}</button>
     `;
-
-    // Store bay reference globally so the button can access it
     window._scannedBay = bay;
 }
-

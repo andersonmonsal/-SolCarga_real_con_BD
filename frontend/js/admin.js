@@ -1,76 +1,50 @@
-// ============================================
-// RideNow — Panel de Administrador
-// ============================================
-
 let adminSocket = null;
 let activeSupportRooms = [];
 let currentAdminRoom = null;
-
 function initAdminPanel() {
-    adminSocket = socket; // reutiliza socket global de app.js
-
-    // Listen for new support requests from users
+    adminSocket = socket; 
     adminSocket.on("support:new_request", (data) => {
         showAdminNotification(`💬 ${data.userName} solicita soporte`);
         addSupportRoom(data);
         renderSupportRooms();
     });
-
-    // Listen for messages in the current room
     adminSocket.on("support:message", (msg) => {
         if (msg.sender === "user") {
             appendAdminChatMessage(msg.text, "user", msg.senderName);
         }
     });
-
-    // Listen for room list
     adminSocket.on("support:room_list", (rooms) => {
         activeSupportRooms = rooms;
         renderSupportRooms();
     });
-
-    // Request existing rooms
     adminSocket.emit("support:list");
-
-    // Listen for changes in bays or reservations
     adminSocket.on("bayUpdated", () => {
         loadAdminReservations();
         loadAdminBays();
     });
-
-    // Real-time car spot sensor updates
     adminSocket.on("carSpotUpdated", () => {
         loadAdminCarSpots();
     });
-
     loadAdminReservations();
     loadAdminBays();
     loadAdminUsers();
     loadAdminQRCodes();
     loadAdminCarSpots();
 }
-
-// ─── RESERVATIONS ─────────────────────────────────────────
-
 async function loadAdminReservations() {
     const token = getToken();
     const container = document.getElementById("adminReservationsList");
     if (!container) return;
-
     container.innerHTML = `<div class="admin-loading">⏳ Cargando reservas...</div>`;
-
     try {
         const res = await fetch("/api/admin/reservations/all", {
             headers: { "Authorization": `Bearer ${token}` }
         });
-
         const data = await res.json();
-
         if (!res.ok) {
             container.innerHTML = `<div class="admin-error">⚠️ ${data.error}</div>`;
             return;
         }
-
         if (!data.length) {
             container.innerHTML = `
                 <div class="admin-empty">
@@ -79,7 +53,6 @@ async function loadAdminReservations() {
                 </div>`;
             return;
         }
-
         container.innerHTML = data.map(r => `
             <div class="admin-reservation-card" id="res-card-${r.id}">
                 <div class="admin-res-info">
@@ -101,38 +74,29 @@ async function loadAdminReservations() {
                 </button>
             </div>
         `).join("");
-
     } catch (err) {
         container.innerHTML = `<div class="admin-error">Error de conexión: ${err.message}</div>`;
     }
 }
-
 async function adminCancelReservation(reservationId) {
     const btn = document.getElementById(`cancel-btn-${reservationId}`);
     if (!btn) return;
-
     if (!confirm("¿Estás seguro de que quieres cancelar esta reserva?")) return;
-
     btn.disabled = true;
     btn.textContent = "Cancelando...";
-
     try {
         const token = getToken();
         const res = await fetch(`/api/admin/reservations/${reservationId}`, {
             method: "DELETE",
             headers: { "Authorization": `Bearer ${token}` }
         });
-
         const data = await res.json();
-
         if (!res.ok) {
             alert(`Error: ${data.error}`);
             btn.disabled = false;
             btn.textContent = "Quitar reserva";
             return;
         }
-
-        // Animate card out
         const card = document.getElementById(`res-card-${reservationId}`);
         if (card) {
             card.style.transition = "opacity 0.4s, transform 0.4s";
@@ -140,69 +104,52 @@ async function adminCancelReservation(reservationId) {
             card.style.transform = "translateX(40px)";
             setTimeout(() => card.remove(), 400);
         }
-
         showAdminNotification("✅ Reserva cancelada y bahía liberada");
-
     } catch (err) {
         alert(`Error: ${err.message}`);
         btn.disabled = false;
         btn.textContent = "Quitar reserva";
     }
 }
-
-// ─── BAYS ─────────────────────────────────────────────────
-
 async function loadAdminBays() {
     const token = getToken();
     const container = document.getElementById("adminBaysList");
     if (!container) return;
-
     try {
         const res = await fetch("/api/bays", {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const data = await res.json();
-
         const statusEmoji = { available: "🟢", reserved: "🟡", occupied: "🔴", offline: "⚪" };
         const statusLabel = { available: "Libre", reserved: "Reservada", occupied: "Ocupada", offline: "Fuera de servicio" };
-
         container.innerHTML = data.map(b => `
             <div class="admin-bay-pill ${b.status}">
                 ${statusEmoji[b.status] || "⚪"} ${b.code}
                 <small>${statusLabel[b.status] || b.status}</small>
             </div>
         `).join("");
-
     } catch (err) {
         container.innerHTML = "<small style='color:var(--muted)'>Error cargando bahías</small>";
     }
 }
-
-// ─── USERS ─────────────────────────────────────────────────
-
 async function loadAdminUsers() {
     const token = getToken();
     const container = document.getElementById("adminUsersList");
     if (!container) return;
-    
     container.innerHTML = `<div class="admin-loading">⏳ Cargando usuarios...</div>`;
-
     try {
         const res = await fetch("/api/auth/users", {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const data = await res.json();
-        
         if (!res.ok) {
             container.innerHTML = `<div class="admin-error">⚠️ ${data.error}</div>`;
             return;
         }
-
         if (!data.length) {
             container.innerHTML = `<p style="color:var(--muted);">No hay usuarios registrados.</p>`;
             return;
         }
-
         container.innerHTML = data.map(u => `
             <div style="background:var(--card); padding:15px; border-radius:12px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
                 <div>
@@ -218,12 +165,10 @@ async function loadAdminUsers() {
                 >🗑️ Eliminar</button>
             </div>
         `).join("");
-
     } catch (err) {
         container.innerHTML = "<small style='color:var(--muted)'>Error cargando usuarios</small>";
     }
 }
-
 async function deleteUserFromAdmin(userId, userName) {
     if (!confirm(`¿Eliminar la cuenta de "${userName}"? Esta acción no se puede deshacer.`)) return;
     try {
@@ -242,9 +187,6 @@ async function deleteUserFromAdmin(userId, userName) {
         showAdminNotification("⚠️ Error de conexión");
     }
 }
-
-// ─── SUPPORT CHAT ─────────────────────────────────────────
-
 function addSupportRoom(data) {
     const exists = activeSupportRooms.find(r => r.roomId === data.roomId);
     if (!exists) {
@@ -256,16 +198,13 @@ function addSupportRoom(data) {
         });
     }
 }
-
 function renderSupportRooms() {
     const list = document.getElementById("adminSupportRooms");
     if (!list) return;
-
     if (!activeSupportRooms.length) {
         list.innerHTML = `<div style="color:var(--muted); font-size:13px; padding:10px 0">Sin solicitudes activas</div>`;
         return;
     }
-
     list.innerHTML = activeSupportRooms.map(room => `
         <button class="support-room-btn ${currentAdminRoom === room.roomId ? 'active' : ''}"
                 onclick="adminJoinRoom('${room.roomId}', '${room.userName}')">
@@ -277,17 +216,10 @@ function renderSupportRooms() {
         </button>
     `).join("");
 }
-
 function adminJoinRoom(roomId, userName) {
     currentAdminRoom = roomId;
-
-    // Join the socket room
     adminSocket.emit("support:admin_join", { roomId });
-
-    // Update UI
     renderSupportRooms();
-
-    // Show chat pane
     const chatArea = document.getElementById("adminSupportChat");
     if (chatArea) {
         chatArea.classList.remove("hidden");
@@ -297,50 +229,39 @@ function adminJoinRoom(roomId, userName) {
         `;
     }
 }
-
 function appendAdminChatMessage(text, sender, name) {
     const container = document.getElementById("adminChatMessages");
     if (!container) return;
-
     const div = document.createElement("div");
     div.className = `support-msg ${sender}`;
     div.innerHTML = `<strong>${name}:</strong> ${text}`;
     container.appendChild(div);
     container.scrollTop = container.scrollHeight;
 }
-
 function adminSendMessage() {
     if (!currentAdminRoom) return;
-
     const input = document.getElementById("adminChatInput");
     const text = input.value.trim();
     if (!text) return;
-
     adminSocket.emit("support:message", {
         roomId: currentAdminRoom,
         text,
         sender: "admin",
         senderName: "Administrador 👨‍💼"
     });
-
     appendAdminChatMessage(text, "admin", "Administrador 👨‍💼");
     input.value = "";
 }
-
 function adminCloseRoom() {
     if (!currentAdminRoom) return;
     adminSocket.emit("support:close", { roomId: currentAdminRoom });
     activeSupportRooms = activeSupportRooms.filter(r => r.roomId !== currentAdminRoom);
     currentAdminRoom = null;
     renderSupportRooms();
-
     const chatArea = document.getElementById("adminSupportChat");
     if (chatArea) chatArea.classList.add("hidden");
     showAdminNotification("Sesión de soporte cerrada.");
 }
-
-// ─── NOTIFICATIONS ────────────────────────────────────────
-
 function showAdminNotification(text) {
     const el = document.getElementById("adminNotification");
     if (!el) return;
@@ -352,24 +273,17 @@ function showAdminNotification(text) {
         setTimeout(() => el.classList.add("hidden"), 400);
     }, 3500);
 }
-
-// ─── QR DE PUERTOS ────────────────────────────────────────
-
 async function loadAdminQRCodes() {
     const container = document.getElementById("adminQRGrid");
     if (!container) return;
-
     container.innerHTML = `<div class="admin-loading">⏳ Generando QR de puertos...</div>`;
-
     try {
         const res = await fetch("/api/reservations/all-bay-qr");
         const data = await res.json();
-
         if (!res.ok || !data.length) {
             container.innerHTML = `<div class="admin-empty">No hay puertos configurados.</div>`;
             return;
         }
-
         container.innerHTML = data.map(port => `
             <div class="admin-qr-card" id="qr-card-${port.bay}">
                 <div class="admin-qr-port-label">
@@ -386,15 +300,11 @@ async function loadAdminQRCodes() {
                 </div>
             </div>
         `).join('');
-
-        // Store data globally for print-all
         window._allPortQRs = data;
-
     } catch (err) {
         container.innerHTML = `<div class="admin-error">Error cargando QR: ${err.message}</div>`;
     }
 }
-
 function printOneQR(bayCode, qrImage, location) {
     const win = window.open('', '_blank', 'width=500,height=600');
     win.document.write(`
@@ -423,7 +333,6 @@ function printOneQR(bayCode, qrImage, location) {
     `);
     win.document.close();
 }
-
 function printAllQRCodes() {
     const data = window._allPortQRs;
     if (!data || !data.length) {
@@ -462,14 +371,10 @@ function printAllQRCodes() {
     `);
     win.document.close();
 }
-
-// ─── ADMIN LOGOUT ─────────────────────────────────────────
-
 function adminLogout() {
     clearSession();
     location.reload();
 }
-
 async function deleteAdminAccount() {
     if (!confirm("¿Estás seguro de que deseas eliminar tu cuenta de administrador? Esta acción no se puede deshacer.")) return;
     try {
@@ -489,29 +394,21 @@ async function deleteAdminAccount() {
         alert("Error de conexión");
     }
 }
-
-// ─── CAR PARKING SPOTS (Sensors) ──────────────────────────
-
 async function loadAdminCarSpots() {
     const container = document.getElementById("adminCarSpotsList");
     if (!container) return;
-
     container.innerHTML = `<div class="admin-loading">⏳ Cargando sensores...</div>`;
-
     try {
         const res = await fetch("/api/car-spots");
         if (!res.ok) throw new Error("Error cargando parqueaderos");
         const data = await res.json();
         const { spots = [], summary = {} } = data;
-
         if (spots.length === 0) {
             container.innerHTML = `<p style="color:var(--muted); text-align:center; padding:20px;">No hay parqueaderos registrados.</p>`;
             return;
         }
-
         const freeCount = summary.free ?? spots.filter(s => s.status === 'free').length;
         const total = summary.total ?? spots.length;
-
         container.innerHTML = `
             <div style="margin-bottom:16px; padding:14px; background:var(--green-light); border-radius:12px; display:flex; gap:20px; flex-wrap:wrap;">
                 <span>🟢 Libres: <strong>${freeCount}</strong></span>
@@ -567,7 +464,6 @@ async function loadAdminCarSpots() {
         container.innerHTML = `<p style="color:var(--red); text-align:center; padding:20px;">⚠️ ${err.message}</p>`;
     }
 }
-
 async function simulateCarSpotSensor(spotId) {
     const token = getToken();
     try {
