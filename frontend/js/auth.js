@@ -17,11 +17,11 @@ function clearSession() {
     localStorage.removeItem("RideNow_user");
 }
 
-async function login(email, password, requestedRole = 'user') {
+async function login(email, password) {
     const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, requestedRole })
+        body: JSON.stringify({ email, password })
     });
 
     const data = await response.json();

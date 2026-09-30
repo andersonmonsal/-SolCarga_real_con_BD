@@ -31,12 +31,8 @@ function setupAuth() {
         const email = document.getElementById("loginEmail").value;
         const password = document.getElementById("loginPassword").value;
         
-        // Find which role is active in UI
-        const activeBtn = document.querySelector(".role-btn.active");
-        const requestedRole = activeBtn && activeBtn.textContent.toLowerCase().includes('admin') ? 'admin' : 'user';
-
         try {
-            await login(email, password, requestedRole);
+            await login(email, password);
             showApp();
         } catch (error) {
             if (error.needsVerification) {
@@ -253,50 +249,6 @@ function setupNavigation() {
     }
 }
 
-// ============================================
-// LOGIN ROLE SELECTOR
-// ============================================
-
-window.selectLoginRole = function(role) {
-    const buttons = document.querySelectorAll(".role-btn");
-    buttons.forEach(btn => btn.classList.remove("active"));
-    
-    // Find the correct button and activate it by data-i18n key
-    const activeBtn = Array.from(buttons).find(b => b.dataset.i18n === (role === 'user' ? 'roleUser' : 'roleAdmin'));
-    if (activeBtn) activeBtn.classList.add("active");
-
-    const subtitle = document.getElementById("loginSubtitle");
-    const switchRegisterBtn = document.querySelector("#loginView .link-button"); // The "Create an account" button
-
-    if (role === 'admin') {
-        if (subtitle) subtitle.textContent = t("loginSubtitleAdmin");
-        document.querySelectorAll(".professional-card").forEach(el => el.style.borderTopColor = "var(--red)");
-        document.querySelectorAll(".brand-icon").forEach(el => {
-            el.style.color = "var(--red)";
-            el.style.background = "#fee2e2";
-        });
-        
-        // Admins cannot register from the public portal
-        if (switchRegisterBtn) switchRegisterBtn.style.display = "none";
-        
-        // Force back to login view if they were on register view
-        if (currentScreen === "register") {
-            document.getElementById("registerView").classList.add("hidden");
-            document.getElementById("loginView").classList.remove("hidden");
-            currentScreen = "login";
-        }
-    } else {
-        if (subtitle) subtitle.textContent = t("loginSubtitle");
-        document.querySelectorAll(".professional-card").forEach(el => el.style.borderTopColor = "var(--green)");
-        document.querySelectorAll(".brand-icon").forEach(el => {
-            el.style.color = "var(--green)";
-            el.style.background = "var(--green-light)";
-        });
-        
-        // Normal users can register
-        if (switchRegisterBtn) switchRegisterBtn.style.display = "block";
-    }
-}
 
 function showPage(page) {
     currentScreen = page;
