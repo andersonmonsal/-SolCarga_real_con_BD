@@ -160,7 +160,7 @@ const translations = {
         vehicleBike: "🚲 Electric Bicycle",
         passwordHint: "Minimum 8 characters with at least one special character (!@#$%&*)",
         // Home section
-        greeting: "Hello, Anderson 👋, Anderson 👋",
+        greeting: "Hello",
         heroEnergy: "Your energy, always in motion.",
         heroSubtitle: "Find a station, reserve your bay and continue your journey.",
         greetingSubtitle: "What do you want to do?",
