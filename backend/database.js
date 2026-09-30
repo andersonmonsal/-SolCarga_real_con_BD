@@ -18,7 +18,7 @@ pool.on("error", (err) => {
 async function initDB(retries = 5) {
     while (retries > 0) {
         try {
-            // Test connection first
+            
             await pool.query("SELECT 1");
             
             const schemaPath = path.join(__dirname, "..", "database", "schema.sql");
@@ -36,15 +36,11 @@ async function initDB(retries = 5) {
     console.error("❌ No se pudo inicializar la base de datos tras varios intentos.");
 }
 
-// Inicializar DB si no está en modo test
+
 if (process.env.NODE_ENV !== "test") {
     initDB();
 }
 
-/**
- * Función wrapper para INSERT/UPDATE/DELETE
- * Devuelve el objeto result. Si se incluye RETURNING, se puede acceder a result.rows
- */
 async function run(sql, params = []) {
     try {
         const result = await pool.query(sql, params);
@@ -57,9 +53,6 @@ async function run(sql, params = []) {
     }
 }
 
-/**
- * Función wrapper para obtener 1 fila
- */
 async function get(sql, params = []) {
     try {
         const result = await pool.query(sql, params);
@@ -69,9 +62,6 @@ async function get(sql, params = []) {
     }
 }
 
-/**
- * Función wrapper para obtener múltiples filas
- */
 async function all(sql, params = []) {
     try {
         const result = await pool.query(sql, params);

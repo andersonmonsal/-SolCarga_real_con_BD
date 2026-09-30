@@ -1,29 +1,29 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <!-- Skip navigation for screen readers -->
+    
     <meta charset="UTF-8">
-    <!-- Mobile optimized viewport — covers notch on iOS -->
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ELECTRA - Estación Inteligente</title>
 
-    <!-- PWA / App-like on iOS & Android -->
+    
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="ELECTRA">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#152c24">
 
-    <!-- PWA Manifest -->
+    
     <link rel="manifest" href="/manifest.json?v=2">
     <link rel="apple-touch-icon" href="/img/logo.jpg?v=2">
 
-    <!-- SEO -->
+    
     <meta name="description" content="ELECTRA — Estación inteligente de carga para patinetas y bicicletas eléctricas">
 
-    <!-- CSS -->
+    
     <link rel="stylesheet" href="/css/styles.css?v=3">
-    <!-- Google Fonts -->
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
     <style>
@@ -36,17 +36,17 @@
         }
     </style>
 
-    <!-- Dependencies -->
+    
     <script src="/socket.io/socket.io.js"></script>
-    <!-- QR Scanner library -->
+    
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 </head>
 <body data-theme="normal">
 
-    <!-- Skip to main content (accessibility) -->
+    
     <a href="#mainContent" class="skip-link" tabindex="0">Saltar al contenido principal</a>
 
-    <!-- ================== AUTH (LOGIN) ================== -->
+    
     <div id="loginView" class="view auth-view hidden">
         <div class="auth-card professional-card">
             <div class="brand-header">
@@ -80,7 +80,7 @@
         </div>
     </div>
 
-    <!-- ================== AUTH (REGISTER) ================== -->
+    
     <div id="registerView" class="view auth-view hidden">
         <div class="auth-card professional-card">
             <div class="brand-header">
@@ -127,7 +127,7 @@
         </div>
     </div>
 
-    <!-- ================== AUTH (VERIFY EMAIL) ================== -->
+    
     <div id="verifyEmailView" class="view auth-view hidden">
         <div class="auth-card professional-card">
             <div class="brand-header">
@@ -151,7 +151,7 @@
         </div>
     </div>
 
-    <!-- ================== AUTH (FORGOT PASSWORD) ================== -->
+    
     <div id="forgotPasswordView" class="view auth-view hidden">
         <div class="auth-card professional-card">
             <div class="brand-header">
@@ -174,7 +174,7 @@
         </div>
     </div>
 
-    <!-- ================== AUTH (RESET PASSWORD) ================== -->
+    
     <div id="resetPasswordView" class="view auth-view hidden">
         <div class="auth-card professional-card">
             <div class="brand-header">
@@ -200,10 +200,10 @@
         </div>
     </div>
 
-    <!-- ================== MAIN APP ================== -->
+    
     <div id="appView" class="view app-view hidden">
 
-        <!-- Top Bar -->
+        
         <header class="topbar">
             <div class="header-brand">
                 <strong>ELECTRA</strong>
@@ -220,7 +220,7 @@
 
         <main id="mainContent">
 
-            <!-- HOME SECTION -->
+            
             <section id="homeSection" class="page-section">
 
                 <div style="margin-bottom: 25px;">
@@ -257,10 +257,10 @@
                 </div>
 
                 <div id="baysGrid" class="bays-grid" role="list" aria-label="Lista de bahías de carga">
-                    <!-- Dynamic from JS -->
+                    
                 </div>
 
-                <!-- SOLAR POINTS FEATURE CARD -->
+                
                 <div class="solar-points-card" role="region" aria-label="Puntos por energía solar">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                         <h3 style="margin: 0; font-size: 14px; font-weight: 700; color: var(--text);">Puntos acumulados</h3>
@@ -271,14 +271,14 @@
 
             </section>
 
-            <!-- RESERVATION SECTION -->
+            
             <section id="reservationSection" class="page-section hidden">
                 <button id="backHome" class="link-button" style="margin-top:0" data-i18n="backHome">← Volver</button>
 
                 <h2 data-i18n="makeReservation">Reservar puerto</h2>
 
                 <div id="selectedBay">
-                    <!-- Dynamic -->
+                    
                 </div>
 
                 <label data-i18n="vehicleQuestion">¿Qué vehículo vas a cargar?</label>
@@ -307,7 +307,7 @@
                 <button id="confirmReservation" class="primary-button" style="margin-top: 30px" data-i18n="confirmReservationBtn">Confirmar reserva</button>
             </section>
 
-            <!-- QR SECTION -->
+            
             <section id="qrSection" class="page-section hidden" style="
                 position: fixed;
                 top: 56px;
@@ -326,12 +326,12 @@
                 <div style="width: 100%; max-width: 420px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); padding: 30px; box-shadow: var(--shadow-lg); border-radius: 16px; text-align: center;">
                     <h2 data-i18n="myQR" style="margin-top: 0; font-size: 20px; font-weight: 800; margin-bottom: 20px;">Mi QR</h2>
                     <div id="qrContainer">
-                        <!-- Dynamic -->
+                        
                     </div>
                 </div>
             </section>
 
-            <!-- LOCATION SECTION -->
+            
             <section id="locationSection" class="page-section hidden" style="
                 position: fixed;
                 top: 56px;
@@ -363,7 +363,7 @@
                         </div>
                     </div>
 
-                    <!-- Live GPS distance -->
+                    
                     <div id="gpsDistanceInfo" style="margin-top: 8px; min-height: 22px;"></div>
                     
                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
@@ -385,7 +385,7 @@
                 </div>
             </section>
 
-            <!-- CHAT SECTION (antes "AI") -->
+            
             <section id="aiSection" class="page-section hidden">
                 <div class="chat-header">
                     <div>
@@ -406,7 +406,7 @@
                     <button type="submit" class="send-btn" aria-label="Enviar">➤</button>
                 </form>
 
-                <!-- Suggestion chips -->
+                
                 <div class="chat-chips" role="group" aria-label="Preguntas sugeridas">
                     <button class="chip" data-chip-es="¿Qué bahías están disponibles ahora?" data-chip-en="What bays are available now?" data-i18n="chipAvailable" onclick="sendChipI18n(this)">⚡ ¿Disponibles?</button>
 
@@ -429,7 +429,7 @@
 
         </main>
 
-        <!-- Bottom Navigation -->
+        
         <nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
             <button class="nav-button active" data-page="home" aria-label="Inicio - Ver bahías de carga" aria-current="page">
                 <div class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></div>
@@ -456,10 +456,10 @@
         </nav>
     </div>
 
-    <!-- ================== ADMIN PANEL ================== -->
+    
     <div id="adminView" class="hidden admin-shell">
 
-        <!-- Admin Top Bar -->
+        
         <header class="admin-topbar">
             <div class="admin-topbar-brand">
                 <div class="admin-logo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
@@ -474,12 +474,12 @@
             </div>
         </header>
 
-        <!-- Admin Notification Toast -->
+        
         <div id="adminNotification" class="admin-toast hidden"></div>
 
         <main class="admin-content" style="padding-top: 20px;">
 
-            <!-- SECTION: Reservations -->
+            
             <div id="adminTab_reservations" class="admin-tab-content" style="margin-bottom: 40px;">
                 <div class="admin-section-header">
                     <h2>🗓️ Reservas activas</h2>
@@ -489,7 +489,7 @@
                 <div id="adminReservationsList"></div>
             </div>
 
-            <!-- SECTION: Bays -->
+            
             <div id="adminTab_bays" class="admin-tab-content" style="margin-bottom: 40px;">
                 <div class="admin-section-header">
                     <h2>⚡ Estado de bahías</h2>
@@ -498,7 +498,7 @@
                 <div id="adminBaysList" class="admin-bays-pills"></div>
             </div>
 
-            <!-- SECTION: Users -->
+            
             <div id="adminTab_users" class="admin-tab-content" style="margin-bottom: 40px;">
                 <div class="admin-section-header">
                     <h2>👥 Usuarios registrados</h2>
@@ -507,20 +507,20 @@
                 <div id="adminUsersList" style="display: flex; flex-direction: column; gap: 10px;"></div>
             </div>
 
-            <!-- SECTION: Support Chat -->
+            
             <div id="adminTab_support" class="admin-tab-content" style="margin-bottom: 40px;">
                 <div class="admin-section-header">
                     <h2>💬 Soporte en vivo</h2>
                 </div>
                 <div class="admin-support-layout">
 
-                    <!-- Sidebar: room list -->
+                    
                     <div class="admin-support-sidebar">
                         <h3>Solicitudes</h3>
                         <div id="adminSupportRooms"></div>
                     </div>
 
-                    <!-- Chat pane -->
+                    
                     <div class="admin-support-chat-pane">
                         <div id="adminSupportChat" class="hidden">
                             <div class="admin-chat-header">
@@ -542,7 +542,7 @@
                 </div>
             </div>
 
-            <!-- SECTION: QR de Puertos -->
+            
             <div id="adminTab_qr" class="admin-tab-content" style="margin-bottom: 40px;">
                 <div class="admin-section-header">
                     <h2>🔲 QR de Puertos</h2>
@@ -559,7 +559,7 @@
 
 
 
-            <!-- SECTION: Developer Options -->
+            
 
             <div id="adminTab_dev" class="admin-tab-content" style="margin-bottom: 20px;">
                 <div class="admin-section-header">
@@ -601,7 +601,7 @@
                             <div style="color:#60a5fa">[DB] SQLite base de datos en memoria sincronizada.</div>
                             <div style="color:#16a34a">[NET] Socket.IO montado en puerto 3000.</div>
                             <div style="color:#f59e0b">[WARN] Se ha detectado una latencia de 120ms en auth.</div>
-                            <!-- Dinámico -->
+                            
                         </div>
                     </div>
                 </div>
@@ -610,7 +610,7 @@
         </main>
     </div>
 
-    <!-- ================== QR SCANNER OVERLAY ================== -->
+    
     <div id="checkinScannerOverlay" class="scanner-overlay" style="display:none;" role="dialog" aria-modal="true" aria-label="Escáner QR de llegada">
         <div class="scanner-card">
             <div class="scanner-header">
@@ -622,7 +622,7 @@
                 Apunta la cámara al código QR en el punto de carga.
             </p>
 
-            <!-- Camera area -->
+            
             <div class="scanner-viewport">
                 <div id="qrReaderElement"></div>
                 <div class="scanner-corners">
@@ -635,7 +635,7 @@
 
             <p id="scannerStatusText" class="scanner-status" data-i18n="startingCamera">Iniciando cámara...</p>
 
-            <!-- Manual fallback (shown on iOS or camera failure) -->
+            
             <div id="scannerFallback" class="hidden" style="width:100%;">
                 <label data-i18n="manualCodeLabel" style="font-size:13px; color: var(--muted); display:block; margin-bottom:6px;">Código de la bahía (ej: ELECTRA-BAY-A1)</label>
                 <input type="text" id="manualCodeInput" placeholder="ELECTRA-BAY-A1" style="text-transform:uppercase; letter-spacing:1px;">
@@ -646,7 +646,7 @@
         </div>
     </div>
 
-    <!-- ACCESSIBILITY MODAL -->
+    
     <div id="accessibilityModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="Opciones de accesibilidad">
         <div class="modal-card">
             <button id="closeAccessibility" class="close-button" aria-label="Cerrar modal">×</button>
@@ -681,7 +681,7 @@
         </div>
     </div>
 
-    <!-- Reservation Confirmation Modal -->
+    
     <div id="reservationModal" class="rn-modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalDesc">
         <div class="rn-modal-backdrop" onclick="closeReservationModal()"></div>
         <div class="rn-modal-card">
@@ -696,7 +696,7 @@
         </div>
     </div>
 
-    <!-- Cancel Reservation Modal -->
+    
     <div id="cancelModal" class="rn-modal hidden" role="dialog" aria-modal="true" aria-labelledby="cancelModalTitle">
         <div class="rn-modal-backdrop" onclick="closeCancelModal()"></div>
         <div class="rn-modal-card">
@@ -710,7 +710,7 @@
         </div>
     </div>
 
-    <!-- SCRIPTS -->
+    
     <script src="/socket.io/socket.io.js"></script>
     <script src="/js/i18n.js?v=2"></script>
     <script src="/js/accessibility.js?v=2"></script>
@@ -723,7 +723,7 @@
 
     <script src="/js/app.js?v=2"></script>
 
-    <!-- PWA Service Worker -->
+    
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {

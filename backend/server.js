@@ -90,15 +90,15 @@ app.use(
     adminRouter
 );
 
-// ============================================
-// Socket.IO — Real-time + Support Chat
-// ============================================
-const supportRooms = new Map(); // Map<roomId, { userId, userName, adminSocketId, messages[] }>
+
+
+
+const supportRooms = new Map(); 
 
 io.on("connection", (socket) => {
     console.log(`🔌 Cliente conectado: ${socket.id}`);
 
-    // User requests support
+    
     socket.on("support:request", (data) => {
         const roomId = `support_${data.userId}`;
         socket.join(roomId);
@@ -112,7 +112,7 @@ io.on("connection", (socket) => {
             });
         }
 
-        // Notify all admins that a new support request came in
+        
         io.emit("support:new_request", {
             roomId,
             userName: data.userName || "Usuario",
@@ -125,7 +125,7 @@ io.on("connection", (socket) => {
         });
     });
 
-    // Admin joins a support room
+    
     socket.on("support:admin_join", (data) => {
         const { roomId } = data;
         socket.join(roomId);
@@ -135,13 +135,13 @@ io.on("connection", (socket) => {
             room.adminSocketId = socket.id;
         }
 
-        // Notify user that admin joined
+        
         io.to(roomId).emit("support:admin_joined", {
             message: "Un administrador se ha conectado al chat."
         });
     });
 
-    // Message in support chat (from either side)
+    
     socket.on("support:message", (data) => {
         const { roomId, text, sender, senderName } = data;
         const room = supportRooms.get(roomId);
@@ -158,7 +158,7 @@ io.on("connection", (socket) => {
         }
     });
 
-    // Admin requests list of active support rooms
+    
     socket.on("support:list", () => {
         const rooms = [];
         supportRooms.forEach((room, roomId) => {
@@ -174,7 +174,7 @@ io.on("connection", (socket) => {
         socket.emit("support:room_list", rooms);
     });
 
-    // Close support session
+    
     socket.on("support:close", (data) => {
         const { roomId } = data;
         const room = supportRooms.get(roomId);
@@ -204,7 +204,7 @@ app.get("*", (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 
-// Get local network IP for LAN access
+
 function getLocalIP() {
     const interfaces = os.networkInterfaces();
     for (const name of Object.keys(interfaces)) {
