@@ -336,6 +336,12 @@ router.post("/checkin", authenticate, async (req, res) => {
             [reservation.bay_id]
         );
 
+        // Add 3 points to user
+        await run(
+            `UPDATE users SET points = points + 3 WHERE id = $1`,
+            [req.user.id]
+        );
+
         // Emit Socket.IO event
         const io = req.app.get("io");
         if (io) {
@@ -346,7 +352,8 @@ router.post("/checkin", authenticate, async (req, res) => {
         }
 
         res.json({
-            message: "¡Llegada confirmada! Tu vehículo puede comenzar a cargarse.",
+            message: "¡Llegada confirmada! Tu vehículo puede comenzar a cargarse. +3 Pts",
+            pointsEarned: 3,
             reservation: {
                 id: reservation.id,
                 code: reservation.code,

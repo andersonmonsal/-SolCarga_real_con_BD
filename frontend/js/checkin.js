@@ -193,6 +193,18 @@ async function confirmCheckin(scannedCode) {
     }
 
     closeCheckinScanner();
+    
+    // Update points in frontend state
+    if (data.pointsEarned) {
+        const user = getUser();
+        if (user) {
+            user.points = (user.points || 0) + data.pointsEarned;
+            localStorage.setItem("RideNow_user", JSON.stringify(user));
+            const badge = document.getElementById("userPointsBadge");
+            if (badge) badge.textContent = `${user.points} Pts`;
+        }
+    }
+
     showCheckinSuccess(data.message, data.reservation);
     return data;
 }

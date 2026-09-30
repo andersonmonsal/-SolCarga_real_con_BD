@@ -72,7 +72,7 @@ router.post("/register", async (req, res) => {
         );
 
         const user = await get(
-            `SELECT id, name, last_name, email, vehicle_type, role, is_verified
+            `SELECT id, name, last_name, email, vehicle_type, role, is_verified, points
              FROM users
              WHERE id = $1`,
             [result.id]
@@ -179,7 +179,8 @@ router.post("/login", async (req, res) => {
                 last_name: user.last_name,
                 email: user.email,
                 vehicle_type: user.vehicle_type,
-                role: effectiveRole
+                role: effectiveRole,
+                points: user.points || 0
             }
         });
 

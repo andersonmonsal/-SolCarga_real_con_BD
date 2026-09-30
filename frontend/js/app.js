@@ -196,6 +196,12 @@ function showApp() {
     if (user) {
         document.getElementById("welcomeUser").textContent = `RideNow`;
         document.getElementById("greetingText").textContent = `${t("greeting")}, ${user.name} 👋`;
+        
+        // Update points badge if available
+        const pointsBadge = document.getElementById("userPointsBadge");
+        if (pointsBadge && user.points !== undefined) {
+            pointsBadge.textContent = `${user.points} Pts`;
+        }
     }
 
     loadBays().then(() => {

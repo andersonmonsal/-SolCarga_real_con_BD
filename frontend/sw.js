@@ -1,5 +1,5 @@
 // RideNow Service Worker — PWA offline support
-const CACHE_NAME = 'ridenow-v4';
+const CACHE_NAME = 'ridenow-v5';
 const STATIC_ASSETS = [
   '/',
   '/css/styles.css',

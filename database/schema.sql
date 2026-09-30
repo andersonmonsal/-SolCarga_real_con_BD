@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
     reset_token_expires TIMESTAMP,
     is_verified     BOOLEAN      DEFAULT true,
     verification_code VARCHAR(10),
+    points          INTEGER      DEFAULT 0,
     created_at      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -128,4 +129,5 @@ ALTER TABLE users
 ADD COLUMN IF NOT EXISTS reset_token VARCHAR(255), 
 ADD COLUMN IF NOT EXISTS reset_token_expires TIMESTAMP, 
 ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT true, 
-ADD COLUMN IF NOT EXISTS verification_code VARCHAR(10);
+ADD COLUMN IF NOT EXISTS verification_code VARCHAR(10),
+ADD COLUMN IF NOT EXISTS points INTEGER DEFAULT 0;
