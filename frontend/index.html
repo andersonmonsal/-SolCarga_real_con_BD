@@ -211,6 +211,7 @@
                 <small id="welcomeUser"></small>
             </div>
             <div class="top-actions">
+                <button id="deleteAccountButton" aria-label="Eliminar cuenta" style="color: var(--red);">🗑️</button>
                 <button id="languageButton" aria-label="Cambiar idioma">ES</button>
                 <button id="accessibilityButton" aria-label="Opciones de accesibilidad">♿</button>
                 <button id="logoutButton" aria-label="Cerrar sesión">🚪</button>
@@ -467,7 +468,10 @@
                     <small id="adminUserName"></small>
                 </div>
             </div>
-            <button class="admin-logout-btn" onclick="adminLogout()">Cerrar sesión 🚪</button>
+            <div style="display:flex; gap: 10px;">
+                <button class="admin-logout-btn" style="background: var(--red); border-color: var(--red); color: white;" onclick="deleteAdminAccount()">Eliminar cuenta 🗑️</button>
+                <button class="admin-logout-btn" onclick="adminLogout()">Cerrar sesión 🚪</button>
+            </div>
         </header>
 
         <!-- Admin Notification Toast -->

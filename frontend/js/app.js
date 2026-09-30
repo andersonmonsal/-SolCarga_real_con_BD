@@ -145,6 +145,30 @@ function setupAuth() {
         clearSession();
         showLogin();
     };
+
+    const deleteAccountBtn = document.getElementById("deleteAccountButton");
+    if (deleteAccountBtn) {
+        deleteAccountBtn.onclick = async () => {
+            if (confirm("¿Estás seguro de que deseas eliminar tu cuenta? Esta acción no se puede deshacer.")) {
+                try {
+                    const res = await fetch("/api/auth/me", {
+                        method: "DELETE",
+                        headers: { "Authorization": `Bearer ${getToken()}` }
+                    });
+                    if (res.ok) {
+                        alert("Cuenta eliminada exitosamente.");
+                        clearSession();
+                        showLogin();
+                    } else {
+                        const data = await res.json();
+                        alert(data.error || "Error eliminando la cuenta");
+                    }
+                } catch (error) {
+                    alert("Error de conexión");
+                }
+            }
+        };
+    }
 }
 
 function showLogin() {

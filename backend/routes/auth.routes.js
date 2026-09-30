@@ -331,4 +331,15 @@ router.get("/users", authenticate, requireAdmin, async (req, res) => {
     }
 });
 
+// DELETE /me — Delete current user account
+router.delete("/me", authenticate, async (req, res) => {
+    try {
+        await run("DELETE FROM users WHERE id = $1", [req.user.id]);
+        res.json({ message: "Cuenta eliminada correctamente" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error eliminando cuenta" });
+    }
+});
+
 module.exports = router;
