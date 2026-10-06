@@ -181,6 +181,7 @@ function showApp() {
     document.getElementById("adminView").classList.add("hidden");
     document.getElementById("appView").classList.remove("hidden");
     if (user) {
+        if (typeof initProfileAvatar === 'function') initProfileAvatar();
         document.getElementById("welcomeUser").textContent = `RideNow`;
         document.getElementById("greetingText").textContent = `${t("greeting")}, ${user.name} 👋`;
         const pointsBadge = document.getElementById("userPointsBadge");

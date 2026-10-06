@@ -58,7 +58,7 @@ router.post("/register", async (req, res) => {
             ]
         );
         const user = await get(
-            `SELECT id, name, last_name, email, vehicle_type, role, is_verified, points
+            `SELECT id, name, last_name, email, vehicle_type, role, is_verified, points, profile_photo
              FROM users
              WHERE id = $1`,
             [result.id]
@@ -150,7 +150,8 @@ router.post("/login", async (req, res) => {
                 email: user.email,
                 vehicle_type: user.vehicle_type,
                 role: effectiveRole,
-                points: user.points || 0
+                points: user.points || 0,
+                profile_photo: user.profile_photo || null
             }
         });
     } catch (error) {
@@ -262,6 +263,63 @@ router.get("/users", authenticate, requireAdmin, async (req, res) => {
         res.status(500).json({
             error: "Error obteniendo usuarios"
         });
+    }
+});
+router.get("/me", authenticate, async (req, res) => {
+    try {
+        const user = await get(
+            `SELECT id, name, last_name, email, vehicle_type, role, points, profile_photo, created_at
+             FROM users WHERE id = $1`,
+            [req.user.id]
+        );
+        if (!user) {
+            return res.status(404).json({ error: "Usuario no encontrado" });
+        }
+        res.json(user);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error obteniendo perfil" });
+    }
+});
+router.put("/me", authenticate, async (req, res) => {
+    try {
+        const { name, last_name, vehicle_type, profile_photo } = req.body;
+        const updates = [];
+        const values = [];
+        let paramIndex = 1;
+        if (name !== undefined) {
+            updates.push(`name = $${paramIndex++}`);
+            values.push(name.trim());
+        }
+        if (last_name !== undefined) {
+            updates.push(`last_name = $${paramIndex++}`);
+            values.push(last_name.trim());
+        }
+        if (vehicle_type !== undefined) {
+            updates.push(`vehicle_type = $${paramIndex++}`);
+            values.push(vehicle_type);
+        }
+        if (profile_photo !== undefined) {
+            updates.push(`profile_photo = $${paramIndex++}`);
+            values.push(profile_photo);
+        }
+        if (updates.length === 0) {
+            return res.status(400).json({ error: "No hay datos para actualizar" });
+        }
+        values.push(req.user.id);
+        await run(
+            `UPDATE users SET ${updates.join(", ")} WHERE id = $${paramIndex}`,
+            values
+        );
+        const user = await get(
+            `SELECT id, name, last_name, email, vehicle_type, role, points, profile_photo, created_at
+             FROM users WHERE id = $1`,
+            [req.user.id]
+        );
+        res.json({ message: "Perfil actualizado", user });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Error actualizando perfil" });
     }
 });
 router.delete("/me", authenticate, async (req, res) => {
