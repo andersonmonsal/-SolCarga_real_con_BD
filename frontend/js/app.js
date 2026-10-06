@@ -118,11 +118,14 @@ function setupAuth() {
         document.getElementById("loginView").classList.remove("hidden");
         document.getElementById("registerView").classList.add("hidden");
     };
-    document.getElementById("logoutButton").onclick = () => {
-        if (typeof stopGeoWatch === 'function') stopGeoWatch();
-        clearSession();
-        showLogin();
-    };
+    const logoutBtn = document.getElementById("logoutButton");
+    if (logoutBtn) {
+        logoutBtn.onclick = () => {
+            if (typeof stopGeoWatch === 'function') stopGeoWatch();
+            clearSession();
+            showLogin();
+        };
+    }
     const deleteAccountBtn = document.getElementById("deleteAccountButton");
     if (deleteAccountBtn) {
         deleteAccountBtn.onclick = async () => {
