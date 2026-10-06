@@ -19,6 +19,9 @@ const aiRoutes = require("./routes/ai.routes");
 const stationRoutes = require("./routes/station.routes");
 const carSpotsRoutes = require("./routes/carspots.routes");
 
+const rateLimit = require("express-rate-limit");
+const morgan = require("morgan");
+
 const app = express();
 
 const server = http.createServer(app);
@@ -33,6 +36,9 @@ app.set("io", io);
 
 app.use(cors());
 
+// 10. Mon, Logs, War (Morgan para logging)
+app.use(morgan("dev"));
+
 app.use(express.json({ limit: '10mb' }));
 
 app.use(
@@ -40,6 +46,23 @@ app.use(
         extended: true
     })
 );
+
+// 9. Rate limiting
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutos
+    max: 100, // Limita cada IP a 100 peticiones por ventana
+    message: { error: "Demasiadas peticiones desde esta IP. Intenta de nuevo más tarde." }
+});
+
+const authLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hora
+    max: 20, // Limita intentos de login/registro a 20 por hora
+    message: { error: "Demasiados intentos de autenticación. Intenta de nuevo más tarde." }
+});
+
+app.use("/api/", apiLimiter);
+app.use("/api/auth/login", authLimiter);
+app.use("/api/auth/register", authLimiter);
 
 app.use(
     express.static(
