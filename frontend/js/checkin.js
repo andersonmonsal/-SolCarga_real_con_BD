@@ -13,6 +13,10 @@ function openCheckinScanner(mode = 'checkin') {
         if (headerTitle) headerTitle.textContent = typeof t === 'function' ? t('scanToBook') : 'Escanear para reservar';
         if (instructions) instructions.textContent = typeof t === 'function' ? t('scanToBookInstructions') : 'Apunta al código QR de la bahía física que deseas usar para reservarla de inmediato.';
         if (manualBtn) manualBtn.textContent = typeof t === 'function' ? t('findBayBtn') : 'Buscar bahía';
+    } else if (mode === 'checkout') {
+        if (headerTitle) headerTitle.textContent = 'Confirmar salida y desconexión';
+        if (instructions) instructions.textContent = 'Apunta la cámara al código QR de tu punto de carga para liberar la bahía.';
+        if (manualBtn) manualBtn.textContent = 'Liberar bahía y salir';
     } else {
         if (headerTitle) headerTitle.textContent = typeof t === 'function' ? t('confirmArrivalTitle') : 'Confirmar llegada';
         if (instructions) instructions.textContent = typeof t === 'function' ? t('scanToCheckinInstructions') : 'Apunta la cámara al código QR en el punto de carga para iniciar la carga.';
@@ -86,6 +90,8 @@ async function onQRScanned(decodedText) {
     try {
         if (window.scannerMode === 'book') {
             await handleBookingScan(decodedText);
+        } else if (window.scannerMode === 'checkout') {
+            await handleCheckoutScan(decodedText);
         } else {
             await confirmCheckin(decodedText);
         }
@@ -125,6 +131,8 @@ async function submitManualCode() {
     try {
         if (window.scannerMode === 'book') {
             await handleBookingScan(code);
+        } else if (window.scannerMode === 'checkout') {
+            await handleCheckoutScan(code);
         } else {
             await confirmCheckin(code);
         }
@@ -134,7 +142,7 @@ async function submitManualCode() {
             btn.disabled = false;
             btn.textContent = window.scannerMode === 'book'
                 ? (typeof t === 'function' ? t('findBayBtn') : 'Buscar bahía')
-                : (typeof t === 'function' ? t('confirmArrivalManual') : 'Confirmar');
+                : (window.scannerMode === 'checkout' ? 'Liberar bahía y salir' : (typeof t === 'function' ? t('confirmArrivalManual') : 'Confirmar'));
         }
     }
 }
@@ -175,44 +183,43 @@ function showCheckinSuccess(message, reservation) {
     const userName = user ? user.name : (typeof t === 'function' ? t('student') : 'Estudiante');
     const isEn = typeof currentLanguage !== 'undefined' && currentLanguage === 'en';
     container.innerHTML = `
-        <div class="checkin-success-card" style="border: 2px dashed var(--green); background: var(--green-light);">
-            <div class="checkin-checkmark">
-                <svg viewBox="0 0 52 52" class="checkmark-svg">
-                    <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/>
-                    <path class="checkmark-path" fill="none" d="M14 27l7 7 17-17"/>
-                </svg>
+        <div class="checkin-success-card" style="border: 1px solid var(--border-focus); background: var(--surface); padding: 24px; border-radius: 12px;">
+            <div class="checkin-checkmark" style="display:flex; justify-content:center; margin-bottom: 12px;">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--green-light); display: flex; align-items: center; justify-content: center; color: var(--green);">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
             </div>
-            <h3 style="color: var(--text); font-size: 24px; text-align: center; margin-bottom: 5px;">
-                ${isEn ? 'ARRIVAL CONFIRMED!' : '¡EVIDENCIA DE LLEGADA!'}
+            <h3 style="color: var(--text); font-size: 20px; font-weight: 700; text-align: center; margin: 0 0 4px;">
+                ${isEn ? 'Arrival Confirmed' : 'Llegada Confirmada'}
             </h3>
-            <p style="font-weight: bold; font-size: 18px; margin: 0; color: var(--green); text-align: center;">${isEn ? 'Confirmed ✓' : 'Confirmado ✓'}</p>
-            <p class="checkin-msg" style="margin-top: 10px;">${message}</p>
-            <div class="checkin-details" style="background: white; border: 1px solid var(--border); margin-top: 15px;">
-                <div class="checkin-detail-row">
-                    <span>👤 ${isEn ? 'Student' : 'Estudiante'}</span>
-                    <strong>${userName}</strong>
+            <p style="font-weight: 600; font-size: 13px; margin: 0; color: var(--green); text-align: center; text-transform: uppercase; letter-spacing: 0.05em;">${isEn ? 'Charging Active' : 'Carga en Curso'}</p>
+            <p class="checkin-msg" style="margin-top: 10px; text-align: center; font-size: 14px; color: var(--text-2);">${message}</p>
+            <div class="checkin-details" style="background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-top: 16px;">
+                <div class="checkin-detail-row" style="display:flex; justify-content:space-between; padding: 6px 0; border-bottom: 1px solid var(--border);">
+                    <span style="color:var(--text-3); font-size: 13px;">${isEn ? 'Student / User' : 'Estudiante / Usuario'}</span>
+                    <strong style="font-size: 13px; color:var(--text);">${userName}</strong>
                 </div>
-                <div class="checkin-detail-row">
-                    <span>🕒 ${isEn ? 'Date & Time' : 'Fecha y Hora'}</span>
-                    <strong>${timeStr}</strong>
+                <div class="checkin-detail-row" style="display:flex; justify-content:space-between; padding: 6px 0; border-bottom: 1px solid var(--border);">
+                    <span style="color:var(--text-3); font-size: 13px;">${isEn ? 'Timestamp' : 'Fecha y Hora'}</span>
+                    <strong style="font-size: 13px; color:var(--text); font-family: var(--font-mono);">${timeStr}</strong>
                 </div>
-                <div class="checkin-detail-row">
-                    <span>🏷️ ${isEn ? 'Reservation' : 'Reserva'}</span>
-                    <strong>${reservation.code}</strong>
+                <div class="checkin-detail-row" style="display:flex; justify-content:space-between; padding: 6px 0; border-bottom: 1px solid var(--border);">
+                    <span style="color:var(--text-3); font-size: 13px;">${isEn ? 'Reservation ID' : 'Código de Reserva'}</span>
+                    <strong style="font-size: 13px; font-family: var(--font-mono); color:var(--text);">${reservation.code}</strong>
                 </div>
-                <div class="checkin-detail-row">
-                    <span>⚡ ${isEn ? 'Bay' : 'Bahía'}</span>
-                    <strong>${reservation.bay}</strong>
+                <div class="checkin-detail-row" style="display:flex; justify-content:space-between; padding: 6px 0; border-bottom: 1px solid var(--border);">
+                    <span style="color:var(--text-3); font-size: 13px;">${isEn ? 'Bay' : 'Bahía Asignada'}</span>
+                    <strong style="font-size: 13px; font-family: var(--font-mono); color:var(--accent);">${reservation.bay}</strong>
                 </div>
-                <div class="checkin-detail-row">
-                    <span>🔋 ${isEn ? 'Status' : 'Estado'}</span>
-                    <strong class="status-charging">${isEn ? 'Charging ⚡' : 'Cargando ⚡'}</strong>
+                <div class="checkin-detail-row" style="display:flex; justify-content:space-between; padding: 6px 0;">
+                    <span style="color:var(--text-3); font-size: 13px;">${isEn ? 'Status' : 'Estado'}</span>
+                    <strong style="font-size: 12px; color: var(--green); text-transform: uppercase;">${isEn ? 'Connected • Charging' : 'Conectado • Cargando'}</strong>
                 </div>
             </div>
-            <p class="checkin-hint" style="margin-top: 15px; font-weight: bold; color: var(--text);">
+            <p class="checkin-hint" style="margin-top: 14px; font-size: 12px; color: var(--text-3); text-align: center;">
                 ${isEn
-                    ? 'Show this screen to the professor as evidence of your arrival at the charging point.'
-                    : 'Muestra esta pantalla al profesor como evidencia de tu llegada al punto de carga.'}
+                    ? 'Screen serves as verified check-in proof for laboratory or campus authorities.'
+                    : 'Esta pantalla sirve como constancia digital de conexión en el laboratorio o campus.'}
             </p>
         </div>
     `;
@@ -230,6 +237,8 @@ async function handleBookingScan(scannedCode) {
     let bayCode = code;
     if (code.startsWith('RIDENOW-BAY-')) {
         bayCode = code.replace('RIDENOW-BAY-', '');
+    } else if (code.startsWith('ELECTRA-BAY-')) {
+        bayCode = code.replace('ELECTRA-BAY-', '');
     } else if (code.includes('?BAHIA=')) {
         bayCode = code.split('?BAHIA=')[1].split('&')[0];
     }
@@ -243,60 +252,114 @@ async function handleBookingScan(scannedCode) {
         throw new Error("No se pudo verificar el estado de la bahía. Revisa tu conexión.");
     }
     if (!bay) {
-        throw new Error(`QR no reconocido. Código extraído: "${bayCode}". Código original escaneado: "${code}" no existe en el sistema.`);
+        throw new Error(`Código QR no reconocido: "${code}". Verifica el código del puerto.`);
     }
     const overlay = document.getElementById("checkinScannerOverlay");
     const card = overlay.querySelector(".scanner-card");
-    const statusColor = { available: '#16a34a', reserved: '#d97706', occupied: '#dc2626', offline: '#6b7280' };
     const statusLabel = {
-        available: typeof t === 'function' ? `🟢 ${t('statusAvailable')}` : '🟢 Disponible',
-        reserved:  typeof t === 'function' ? `🟡 ${t('statusReserved')}` : '🟡 Reservada',
-        occupied:  typeof t === 'function' ? `🔴 ${t('statusOccupied')}` : '🔴 Ocupada',
-        offline:   typeof t === 'function' ? `⚪ ${t('statusOffline')}` : '⚪ Fuera de servicio'
+        available: typeof t === 'function' ? t('statusAvailable') : 'Disponible',
+        reserved:  typeof t === 'function' ? t('statusReserved') : 'Reservada',
+        occupied:  typeof t === 'function' ? t('statusOccupied') : 'Ocupada',
+        offline:   typeof t === 'function' ? t('statusOffline') : 'Fuera de servicio'
     };
-    const vehicleIcon = bay.vehicle_type === 'Bicicleta' ? '🚲' : '🛴';
     const isEn = typeof currentLanguage !== 'undefined' && currentLanguage === 'en';
     card.innerHTML = `
         <div class="scanner-header">
-            <h3>Información de la bahía</h3>
-            <button class="close-button" onclick="closeCheckinScanner()">×</button>
+            <h3>Detalles de la Bahía</h3>
+            <button class="close-button" onclick="closeCheckinScanner()" aria-label="Cerrar">×</button>
         </div>
-        <div style="text-align:center; padding: 10px 0 20px;">
-            <div style="font-size: 56px; margin-bottom: 8px;">${vehicleIcon}</div>
-            <div style="font-size: 32px; font-weight: 800; letter-spacing: 2px;">${bay.code}</div>
-            <div style="margin-top: 8px; font-size: 15px; font-weight: 600; color: ${statusColor[bay.status] || '#6b7280'};">
-                ${statusLabel[bay.status] || bay.status}
+        <div style="text-align:center; padding: 14px 0 20px;">
+            <div style="font-size: 28px; font-weight: 800; font-family: var(--font-mono); letter-spacing: 1px; color: var(--text);">${bay.code}</div>
+            <div style="margin-top: 6px;">
+                <span class="bay-status-pill" style="display:inline-block;">${statusLabel[bay.status] || bay.status}</span>
             </div>
         </div>
-        <div style="background: var(--background, #f8fafc); border-radius: 12px; padding: 16px; margin-bottom: 20px; text-align: left;">
-            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border, #e5e7eb);">
-                <span style="color: var(--muted, #6b7280); font-size: 14px;">⚡ ${isEn ? 'Bay' : 'Bahía'}</span>
-                <strong>${bay.code}</strong>
+        <div style="background: var(--surface-2); border-radius: 8px; padding: 14px; margin-bottom: 20px; text-align: left; border: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border);">
+                <span style="color: var(--text-3); font-size: 13px;">${isEn ? 'Port Code' : 'Código de Puerto'}</span>
+                <strong style="font-size: 13px; font-family: var(--font-mono);">${bay.code}</strong>
             </div>
-            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border, #e5e7eb);">
-                <span style="color: var(--muted, #6b7280); font-size: 14px;">${vehicleIcon} ${isEn ? 'Vehicle type' : 'Tipo de vehículo'}</span>
-                <strong>${bay.vehicle_type}</strong>
+            <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border);">
+                <span style="color: var(--text-3); font-size: 13px;">${isEn ? 'Vehicle Compatibility' : 'Tipo de Vehículo'}</span>
+                <strong style="font-size: 13px;">${bay.vehicle_type}</strong>
             </div>
-            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border, #e5e7eb);">
-                <span style="color: var(--muted, #6b7280); font-size: 14px;">📍 ${isEn ? 'Location' : 'Ubicación'}</span>
-                <strong>${bay.location || (isEn ? 'Charging zone' : 'Zona de carga')}</strong>
+            <div style="display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border);">
+                <span style="color: var(--text-3); font-size: 13px;">${isEn ? 'Location' : 'Ubicación'}</span>
+                <strong style="font-size: 13px;">${bay.location || (isEn ? 'Main Hub' : 'Estación Principal')}</strong>
             </div>
-            <div style="display: flex; justify-content: space-between; padding: 8px 0;">
-                <span style="color: var(--muted, #6b7280); font-size: 14px;">🔋 ${isEn ? 'Status' : 'Estado'}</span>
-                <strong style="color: ${statusColor[bay.status]};">${statusLabel[bay.status]}</strong>
+            <div style="display: flex; justify-content: space-between; padding: 6px 0;">
+                <span style="color: var(--text-3); font-size: 13px;">${isEn ? 'Status' : 'Estado'}</span>
+                <strong style="font-size: 13px;">${statusLabel[bay.status]}</strong>
             </div>
         </div>
         ${bay.status === 'available' ? `
             <button class="primary-button" style="margin-bottom: 10px;" onclick="closeCheckinScanner(); openReservation(window._scannedBay);">
-                ⚡ ${isEn ? 'Reserve this bay' : 'Reservar esta bahía'}
+                ${isEn ? 'Reserve This Bay' : 'Reservar esta Bahía'}
             </button>
         ` : `
-            <div style="background: #fee2e2; color: #dc2626; border-radius: 10px; padding: 14px; text-align: center; font-weight: 600; margin-bottom: 10px;">
-                ${isEn ? 'This bay is not available right now.' : 'Esta bahía no está disponible en este momento.'}<br>
-                <span style="font-size: 13px; font-weight: 400;">${isEn ? 'Try a nearby bay.' : 'Intenta con otra bahía cercana.'}</span>
+            <div style="background: var(--surface-2); border: 1px solid var(--border); color: var(--text-2); border-radius: 8px; padding: 12px; text-align: center; font-size: 13px; margin-bottom: 12px;">
+                ${isEn ? 'This bay is currently occupied or reserved.' : 'Esta bahía se encuentra ocupada o reservada en este momento.'}
             </div>
         `}
         <button class="link-button" style="width: 100%; text-align: center;" onclick="closeCheckinScanner()">${isEn ? 'Cancel' : 'Cancelar'}</button>
     `;
     window._scannedBay = bay;
 }
+
+async function handleCheckoutScan(scannedCode) {
+    let cleanCode = scannedCode.trim().toUpperCase();
+    if (cleanCode.startsWith('RIDENOW-BAY-')) {
+        cleanCode = cleanCode.replace('RIDENOW-BAY-', '');
+    } else if (cleanCode.startsWith('ELECTRA-BAY-')) {
+        cleanCode = cleanCode.replace('ELECTRA-BAY-', '');
+    } else if (cleanCode.includes('?BAHIA=')) {
+        cleanCode = cleanCode.split('?BAHIA=')[1].split('&')[0];
+    } else if (cleanCode.includes('BAHIA=')) {
+        cleanCode = cleanCode.split('BAHIA=')[1].split('&')[0];
+    }
+
+    const reason = window._exitEarlyReason || "Batería suficiente";
+    const details = window._exitEarlyDetails || "";
+    const result = await checkoutReservation(cleanCode, reason, details);
+    closeCheckinScanner();
+    if (typeof closeExitEarlyModal === 'function') {
+        closeExitEarlyModal();
+    }
+    showCheckoutSuccess(result.message || "Sesión finalizada. Bahía liberada correctamente.");
+}
+
+function showCheckoutSuccess(msg) {
+    const container = document.getElementById("qrContainer");
+    if (!container) return;
+    const isEn = typeof currentLanguage !== 'undefined' && currentLanguage === 'en';
+    container.innerHTML = `
+        <div class="checkin-success-card" style="border: 1px solid var(--border); background: var(--surface); padding: 28px 24px; border-radius: 12px; text-align: center;">
+            <div style="display:flex; justify-content:center; margin-bottom: 12px;">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--green-light); display: flex; align-items: center; justify-content: center; color: var(--green);">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+            </div>
+            <h3 style="color: var(--text); font-size: 20px; font-weight: 700; margin: 0 0 6px;">
+                ${isEn ? 'Session Completed' : 'Sesión de Carga Finalizada'}
+            </h3>
+            <p style="font-weight: 600; font-size: 13px; margin: 0; color: var(--green); text-transform: uppercase; letter-spacing: 0.05em;">
+                ${isEn ? 'Bay Released Successfully' : 'Bahía Liberada con Éxito'}
+            </p>
+            <p class="checkin-msg" style="margin-top: 12px; color: var(--text-2); font-size: 14px;">${msg}</p>
+            <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: center;">
+                <button class="primary-button" onclick="showPage('home')" style="width: auto; padding: 10px 24px;">
+                    ${isEn ? 'Return to Home' : 'Volver al Inicio'}
+                </button>
+            </div>
+        </div>
+    `;
+    if (typeof speak === "function") {
+        speak(isEn ? 'Charging session ended. Thank you for using ELECTRA.' : 'Sesión de carga finalizada. Gracias por usar ELECTRA.');
+    }
+    if (typeof loadBays === "function") {
+        loadBays();
+    }
+    const badge = document.getElementById("qrBadge");
+    if (badge) badge.classList.add("hidden");
+}
+

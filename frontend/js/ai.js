@@ -9,12 +9,12 @@ function activateSupportMode() {
     supportRoomId = `support_${user.id}`;
     const header = document.querySelector(".chat-header p");
     if (header) {
-        header.textContent = "🔴 EN VIVO — Esperando administrador...";
-        header.style.color = "#dc2626";
+        header.textContent = "EN VIVO — Esperando administrador...";
+        header.style.color = "var(--accent)";
     }
     const chips = document.querySelector(".chat-chips");
     if (chips) {
-        chips.innerHTML = `<button class="chip" style="background:#fee2e2; color:#dc2626; border-color:#dc2626" onclick="deactivateSupportMode()">✕ Salir del soporte</button>`;
+        chips.innerHTML = `<button class="chip" style="background:var(--red-light); color:var(--red); border-color:var(--red)" onclick="deactivateSupportMode()">Finalizar soporte</button>`;
     }
     socket.emit("support:request", {
         userId: user.id,
@@ -24,11 +24,11 @@ function activateSupportMode() {
         addAIMessage(data.message || "Conectando con soporte...", "bot");
     });
     socket.on("support:admin_joined", (data) => {
-        addAIMessage("👨‍💼 " + (data.message || "El administrador se unió al chat."), "bot");
+        addAIMessage(data.message || "El administrador se ha unido a la conversación.", "bot");
         const header = document.querySelector(".chat-header p");
         if (header) {
-            header.textContent = "🟢 Administrador conectado";
-            header.style.color = "#16a34a";
+            header.textContent = "Administrador conectado";
+            header.style.color = "var(--green)";
         }
     });
     socket.on("support:message", (msg) => {
@@ -37,7 +37,7 @@ function activateSupportMode() {
         }
     });
     socket.on("support:closed", (data) => {
-        addAIMessage(data.message || "El administrador cerró la sesión.", "bot");
+        addAIMessage(data.message || "El administrador cerró la sesión de soporte.", "bot");
         deactivateSupportMode();
     });
 }
@@ -55,16 +55,16 @@ function deactivateSupportMode() {
             <button class="chip" onclick="sendChip('¿Qué bahías están disponibles ahora?')">¿Disponibles?</button>
             <button class="chip" onclick="sendChip('Recomiéndame una bahía para mi vehículo')">Recomiéndame</button>
             <button class="chip" onclick="sendChip('¿Cómo funciona el sistema de carga?')">¿Cómo funciona?</button>
-            <button class="chip" onclick="sendChip('¿Cuánto tiempo puedo cargar?')">⏱️ Tiempo de carga</button>
-            <button class="chip" onclick="sendChip('¿Cómo cancelo mi reserva?')">❌ Cancelar reserva</button>
-            <button class="chip" onclick="sendChip('¿Cuánta energía solar genera la estación?')">📊 Energía solar</button>
-            <button class="chip" onclick="sendChip('¿Qué tipo de conectores tienen las bahías?')">🔌 Conectores</button>
-            <button class="chip" onclick="sendChip('¿Cuánto cuesta cargar mi vehículo?')">💰 ¿Cuánto cuesta?</button>
-            <button class="chip" onclick="sendChip('¿Cuál es el horario de la estación?')">🕐 Horario</button>
-            <button class="chip" onclick="sendChip('¿Dónde queda la estación de carga?')">📍 Ubicación</button>
-            <button class="chip" onclick="sendChip('¿Cuánto tarda en cargar completamente mi vehículo?')">🔋 Tiempo total de carga</button>
-            <button class="chip" onclick="sendChip('¿Es seguro dejar mi vehículo cargando?')">🔒 Seguridad</button>
-            <button class="chip support-chip" onclick="requestAdminSupport()">👨‍💼 Hablar con administrador</button>
+            <button class="chip" onclick="sendChip('¿Cuánto tiempo puedo cargar?')">Tiempo de carga</button>
+            <button class="chip" onclick="sendChip('¿Cómo cancelo mi reserva?')">Cancelar reserva</button>
+            <button class="chip" onclick="sendChip('¿Cuánta energía solar genera la estación?')">Energía solar</button>
+            <button class="chip" onclick="sendChip('¿Qué tipo de conectores tienen las bahías?')">Conectores</button>
+            <button class="chip" onclick="sendChip('¿Cuánto cuesta cargar mi vehículo?')">Tarifas</button>
+            <button class="chip" onclick="sendChip('¿Cuál es el horario de la estación?')">Horario</button>
+            <button class="chip" onclick="sendChip('¿Dónde queda la estación de carga?')">Ubicación</button>
+            <button class="chip" onclick="sendChip('¿Cuánto tarda en cargar completamente mi vehículo?')">Tiempo total</button>
+            <button class="chip" onclick="sendChip('¿Es seguro dejar mi vehículo cargando?')">Seguridad</button>
+            <button class="chip support-chip" onclick="requestAdminSupport()">Contactar administrador</button>
         `;
     }
 }

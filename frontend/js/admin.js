@@ -35,21 +35,20 @@ async function loadAdminReservations() {
     const token = getToken();
     const container = document.getElementById("adminReservationsList");
     if (!container) return;
-    container.innerHTML = `<div class="admin-loading">⏳ Cargando reservas...</div>`;
+    container.innerHTML = `<div class="admin-loading">Cargando reservas activas...</div>`;
     try {
         const res = await fetch("/api/admin/reservations/all", {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const data = await res.json();
         if (!res.ok) {
-            container.innerHTML = `<div class="admin-error">⚠️ ${data.error}</div>`;
+            container.innerHTML = `<div class="admin-error">${data.error}</div>`;
             return;
         }
         if (!data.length) {
             container.innerHTML = `
                 <div class="admin-empty">
-                    <div style="font-size:48px;margin-bottom:10px">✅</div>
-                    <p>No hay reservas activas en este momento.</p>
+                    <p style="color:var(--text-3); font-size:14px;">No hay reservas activas en este momento.</p>
                 </div>`;
             return;
         }
@@ -57,20 +56,20 @@ async function loadAdminReservations() {
             <div class="admin-reservation-card" id="res-card-${r.id}">
                 <div class="admin-res-info">
                     <div class="admin-res-badge ${r.status === 'checked_in' ? 'badge-charging' : 'badge-active'}">
-                        ${r.status === 'checked_in' ? '⚡ Cargando' : '🟡 Activa'}
+                        ${r.status === 'checked_in' ? 'Cargando' : 'Activa'}
                     </div>
                     <div class="admin-res-user">
                         <strong>${r.user_name} ${r.user_last_name || ''}</strong>
                         <span>${r.user_email}</span>
                     </div>
                     <div class="admin-res-details">
-                        <span>🏷️ <strong>${r.code}</strong></span>
-                        <span>⚡ Bahía <strong>${r.bay}</strong> (${r.vehicle_type})</span>
-                        <span>🕒 Llegada: ${r.arrival}</span>
+                        <span>Código: <strong>${r.code}</strong></span>
+                        <span>Bahía: <strong>${r.bay}</strong> (${r.vehicle_type})</span>
+                        <span>Llegada: ${r.arrival}</span>
                     </div>
                 </div>
                 <button class="admin-cancel-btn" onclick="adminCancelReservation(${r.id})" id="cancel-btn-${r.id}">
-                    Quitar reserva
+                    Cancelar reserva
                 </button>
             </div>
         `).join("");
@@ -81,7 +80,7 @@ async function loadAdminReservations() {
 async function adminCancelReservation(reservationId) {
     const btn = document.getElementById(`cancel-btn-${reservationId}`);
     if (!btn) return;
-    if (!confirm("¿Estás seguro de que quieres cancelar esta reserva?")) return;
+    if (!confirm("¿Deseas cancelar esta reserva y liberar la bahía inmediatamente?")) return;
     btn.disabled = true;
     btn.textContent = "Cancelando...";
     try {
@@ -94,21 +93,21 @@ async function adminCancelReservation(reservationId) {
         if (!res.ok) {
             alert(`Error: ${data.error}`);
             btn.disabled = false;
-            btn.textContent = "Quitar reserva";
+            btn.textContent = "Cancelar reserva";
             return;
         }
         const card = document.getElementById(`res-card-${reservationId}`);
         if (card) {
-            card.style.transition = "opacity 0.4s, transform 0.4s";
+            card.style.transition = "opacity 0.3s ease, transform 0.3s ease";
             card.style.opacity = "0";
-            card.style.transform = "translateX(40px)";
-            setTimeout(() => card.remove(), 400);
+            card.style.transform = "translateX(20px)";
+            setTimeout(() => card.remove(), 300);
         }
-        showAdminNotification("✅ Reserva cancelada y bahía liberada");
+        showAdminNotification("Reserva cancelada y bahía liberada");
     } catch (err) {
         alert(`Error: ${err.message}`);
         btn.disabled = false;
-        btn.textContent = "Quitar reserva";
+        btn.textContent = "Cancelar reserva";
     }
 }
 async function loadAdminBays() {
@@ -120,53 +119,55 @@ async function loadAdminBays() {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const data = await res.json();
-        const statusEmoji = { available: "🟢", reserved: "🟡", occupied: "🔴", offline: "⚪" };
-        const statusLabel = { available: "Libre", reserved: "Reservada", occupied: "Ocupada", offline: "Fuera de servicio" };
+        const statusLabel = { available: "Libre", reserved: "Reservada", occupied: "Ocupada", offline: "Mantenimiento" };
         container.innerHTML = data.map(b => `
             <div class="admin-bay-pill ${b.status}">
-                ${statusEmoji[b.status] || "⚪"} ${b.code}
+                <span>${b.code}</span>
                 <small>${statusLabel[b.status] || b.status}</small>
             </div>
         `).join("");
     } catch (err) {
-        container.innerHTML = "<small style='color:var(--muted)'>Error cargando bahías</small>";
+        container.innerHTML = "<small style='color:var(--text-3)'>Error cargando estado de bahías</small>";
     }
 }
 async function loadAdminUsers() {
     const token = getToken();
     const container = document.getElementById("adminUsersList");
     if (!container) return;
-    container.innerHTML = `<div class="admin-loading">⏳ Cargando usuarios...</div>`;
+    container.innerHTML = `<div class="admin-loading">Cargando directorio de usuarios...</div>`;
     try {
         const res = await fetch("/api/auth/users", {
             headers: { "Authorization": `Bearer ${token}` }
         });
         const data = await res.json();
         if (!res.ok) {
-            container.innerHTML = `<div class="admin-error">⚠️ ${data.error}</div>`;
+            container.innerHTML = `<div class="admin-error">${data.error}</div>`;
             return;
         }
         if (!data.length) {
-            container.innerHTML = `<p style="color:var(--muted);">No hay usuarios registrados.</p>`;
+            container.innerHTML = `<p style="color:var(--text-3);">No hay usuarios registrados en el sistema.</p>`;
             return;
         }
         container.innerHTML = data.map(u => `
-            <div style="background:var(--card); padding:15px; border-radius:12px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+            <div style="background:var(--surface); padding:16px; border-radius:8px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; margin-bottom: 8px;">
                 <div>
-                    <strong style="font-size:16px;">${u.name} ${u.last_name || ''}</strong>
-                    <span style="background: ${u.role === 'admin' ? 'var(--red)' : 'var(--green)'}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-left: 8px;">${u.role.toUpperCase()}</span>
-                    <div style="color:var(--muted); font-size:14px; margin-top:4px;">✉️ ${u.email}</div>
-                    <div style="color:var(--muted); font-size:13px; margin-top:2px;">🚗 ${u.vehicle_type} • 🗓️ ${new Date(u.created_at).toLocaleDateString()}</div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <strong style="font-size:15px; color:var(--text);">${u.name} ${u.last_name || ''}</strong>
+                        <span style="background: ${u.role === 'admin' ? 'var(--accent-glow)' : 'var(--green-light)'}; color: ${u.role === 'admin' ? 'var(--accent)' : 'var(--green)'}; border: 1px solid ${u.role === 'admin' ? 'var(--accent)' : 'var(--green)'}; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; text-transform:uppercase;">${u.role}</span>
+                    </div>
+                    <div style="color:var(--text-2); font-size:13px; margin-top:4px; font-family:var(--font-mono);">${u.email}</div>
+                    <div style="color:var(--text-3); font-size:12px; margin-top:2px;">${u.vehicle_type} • Registro: ${new Date(u.created_at).toLocaleDateString()}</div>
                 </div>
                 <button
                     onclick="deleteUserFromAdmin(${u.id}, '${u.name} ${u.last_name || ''}')"
-                    style="padding:8px 14px; border-radius:8px; border:1px solid var(--red); background:transparent; color:var(--red); font-size:13px; font-weight:600; cursor:pointer;"
+                    class="danger-button"
+                    style="padding:6px 12px; font-size:12px; border-radius:6px; cursor:pointer;"
                     title="Eliminar cuenta de ${u.name}"
-                >🗑️ Eliminar</button>
+                >Eliminar</button>
             </div>
         `).join("");
     } catch (err) {
-        container.innerHTML = "<small style='color:var(--muted)'>Error cargando usuarios</small>";
+        container.innerHTML = "<small style='color:var(--text-3)'>Error cargando usuarios</small>";
     }
 }
 async function deleteUserFromAdmin(userId, userName) {
@@ -276,7 +277,7 @@ function showAdminNotification(text) {
 async function loadAdminQRCodes() {
     const container = document.getElementById("adminQRGrid");
     if (!container) return;
-    container.innerHTML = `<div class="admin-loading">⏳ Generando QR de puertos...</div>`;
+    container.innerHTML = `<div class="admin-loading">Generando códigos QR de puertos...</div>`;
     try {
         const res = await fetch("/api/reservations/all-bay-qr");
         const data = await res.json();
@@ -287,7 +288,7 @@ async function loadAdminQRCodes() {
         container.innerHTML = data.map(port => `
             <div class="admin-qr-card" id="qr-card-${port.bay}">
                 <div class="admin-qr-port-label">
-                    <span class="admin-qr-port-code">⚡ ${port.bay}</span>
+                    <span class="admin-qr-port-code">${port.bay}</span>
                     <span class="admin-qr-port-loc">${port.location || ''}</span>
                 </div>
                 <div class="admin-qr-image-wrap">
@@ -295,8 +296,8 @@ async function loadAdminQRCodes() {
                 </div>
                 <div class="admin-qr-url">${port.qr_text}</div>
                 <div class="admin-qr-actions">
-                    <a href="${port.qr_image}" download="QR-Puerto-${port.bay}.png" class="admin-qr-btn-dl">⬇ Descargar</a>
-                    <button class="admin-qr-btn-print" onclick="printOneQR('${port.bay}', '${port.qr_image}', '${port.location || ''}')">🖨️ Imprimir</button>
+                    <a href="${port.qr_image}" download="QR-Puerto-${port.bay}.png" class="admin-qr-btn-dl">Descargar PNG</a>
+                    <button class="admin-qr-btn-print" onclick="printOneQR('${port.bay}', '${port.qr_image}', '${port.location || ''}')">Imprimir</button>
                 </div>
             </div>
         `).join('');
@@ -397,71 +398,66 @@ async function deleteAdminAccount() {
 async function loadAdminCarSpots() {
     const container = document.getElementById("adminCarSpotsList");
     if (!container) return;
-    container.innerHTML = `<div class="admin-loading">⏳ Cargando sensores...</div>`;
+    container.innerHTML = `<div class="admin-loading">Consultando sensores telemétricos...</div>`;
     try {
         const res = await fetch("/api/car-spots");
-        if (!res.ok) throw new Error("Error cargando parqueaderos");
+        if (!res.ok) throw new Error("Error consultando parqueaderos");
         const data = await res.json();
         const { spots = [], summary = {} } = data;
         if (spots.length === 0) {
-            container.innerHTML = `<p style="color:var(--muted); text-align:center; padding:20px;">No hay parqueaderos registrados.</p>`;
+            container.innerHTML = `<p style="color:var(--text-3); text-align:center; padding:20px;">No hay parqueaderos registrados en el sistema.</p>`;
             return;
         }
         const freeCount = summary.free ?? spots.filter(s => s.status === 'free').length;
         const total = summary.total ?? spots.length;
         container.innerHTML = `
-            <div style="margin-bottom:16px; padding:14px; background:var(--green-light); border-radius:12px; display:flex; gap:20px; flex-wrap:wrap;">
-                <span>🟢 Libres: <strong>${freeCount}</strong></span>
-                <span>🔴 Ocupados: <strong>${spots.filter(s => s.status === 'occupied').length}</strong></span>
-                <span>🔧 Mantenimiento: <strong>${spots.filter(s => s.status === 'maintenance').length}</strong></span>
-                <span>📍 Total: <strong>${total}</strong></span>
+            <div style="margin-bottom:16px; padding:12px 16px; background:var(--surface-2); border:1px solid var(--border); border-radius:8px; display:flex; gap:20px; flex-wrap:wrap; font-size:13px;">
+                <span>Libres: <strong style="color:var(--green);">${freeCount}</strong></span>
+                <span>Ocupados: <strong style="color:var(--red);">${spots.filter(s => s.status === 'occupied').length}</strong></span>
+                <span>Mantenimiento: <strong style="color:var(--amber);">${spots.filter(s => s.status === 'maintenance').length}</strong></span>
+                <span>Total: <strong>${total}</strong></span>
             </div>
             ${spots.map(spot => `
                 <div class="admin-car-spot-card" style="
-                    background:var(--card);
-                    border:2px solid ${ spot.status === 'free' ? '#bbf7d0' : spot.status === 'occupied' ? '#fecaca' : '#fed7aa' };
-                    border-radius:14px;
+                    background:var(--surface);
+                    border:1px solid var(--border);
+                    border-radius:8px;
                     padding:14px;
                     display:flex;
                     align-items:center;
                     justify-content:space-between;
                     gap:10px;
+                    margin-bottom: 8px;
                 ">
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <div style="font-size:24px;">🚗</div>
+                    <div style="display:flex; align-items:center; gap:12px;">
                         <div>
-                            <strong style="font-size:15px;">${spot.code}</strong>
-                            <div style="font-size:12px; color:var(--muted);">${spot.zone} · 📡 ${spot.sensor_id || 'Sin sensor'}</div>
+                            <strong style="font-size:14px; font-family:var(--font-mono); color:var(--text);">${spot.code}</strong>
+                            <div style="font-size:12px; color:var(--text-3);">${spot.zone} · Sensor: ${spot.sensor_id || 'N/A'}</div>
                         </div>
                     </div>
                     <div style="display:flex; align-items:center; gap:8px;">
                         <span style="
-                            padding:4px 10px;
-                            border-radius:20px;
-                            font-size:12px;
+                            padding:3px 10px;
+                            border-radius:4px;
+                            font-size:11px;
                             font-weight:700;
-                            background:${ spot.status === 'free' ? '#dcfce7' : spot.status === 'occupied' ? '#fee2e2' : '#fef3c7' };
-                            color:${ spot.status === 'free' ? '#15803d' : spot.status === 'occupied' ? '#dc2626' : '#d97706' };
-                        ">${ spot.status === 'free' ? '🟢 Libre' : spot.status === 'occupied' ? '🔴 Ocupado' : '🔧 Mantenimiento' }</span>
+                            text-transform:uppercase;
+                            background:${ spot.status === 'free' ? 'var(--green-light)' : spot.status === 'occupied' ? 'var(--red-light)' : 'var(--amber-light)' };
+                            color:${ spot.status === 'free' ? 'var(--green)' : spot.status === 'occupied' ? 'var(--red)' : 'var(--amber)' };
+                            border:1px solid currentColor;
+                        ">${ spot.status === 'free' ? 'Libre' : spot.status === 'occupied' ? 'Ocupado' : 'Mantenimiento' }</span>
                         <button
                             onclick="simulateCarSpotSensor(${spot.id})"
-                            style="
-                                padding:6px 12px;
-                                border-radius:8px;
-                                border:1px solid var(--border);
-                                background:var(--background);
-                                font-size:12px;
-                                font-weight:600;
-                                cursor:pointer;
-                            "
-                            title="Simular sensor: alternar libre/ocupado"
-                        >📡 Simular</button>
+                            class="btn-secondary"
+                            style="padding:5px 10px; font-size:12px; cursor:pointer;"
+                            title="Alternar estado de sensor"
+                        >Simular</button>
                     </div>
                 </div>
             `).join('')}
         `;
     } catch (err) {
-        container.innerHTML = `<p style="color:var(--red); text-align:center; padding:20px;">⚠️ ${err.message}</p>`;
+        container.innerHTML = `<p style="color:var(--red); text-align:center; padding:20px;">${err.message}</p>`;
     }
 }
 async function simulateCarSpotSensor(spotId) {

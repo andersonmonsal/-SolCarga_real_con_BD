@@ -180,7 +180,7 @@ router.delete("/:id", authenticate, async (req, res) => {
     try {
         const reservation = await get(
             `SELECT * FROM reservations
-             WHERE id = $1 AND user_id = $2 AND status = 'active'`,
+             WHERE id = $1 AND user_id = $2 AND status IN ('active', 'checked_in')`,
             [req.params.id, req.user.id]
         );
         if (!reservation) {
@@ -247,9 +247,15 @@ router.post("/checkin", authenticate, async (req, res) => {
             });
         }
         const scannedClean = scannedCode.trim().toUpperCase();
-        const oldExpectedCode = `RIDENOW-BAY-${reservation.bay_code.toUpperCase()}`;
-        const newExpectedCodeEnd = `BAHIA=${reservation.bay_code.toUpperCase()}`;
-        if (scannedClean !== oldExpectedCode && !scannedClean.endsWith(newExpectedCodeEnd) && !scannedClean.includes(newExpectedCodeEnd)) {
+        const bayCodeUpper = reservation.bay_code.toUpperCase();
+        const matchesBay = scannedClean === bayCodeUpper
+            || scannedClean === `RIDENOW-BAY-${bayCodeUpper}`
+            || scannedClean === `ELECTRA-BAY-${bayCodeUpper}`
+            || scannedClean.includes(`BAHIA=${bayCodeUpper}`)
+            || scannedClean.endsWith(bayCodeUpper)
+            || scannedClean === reservation.code.toUpperCase();
+
+        if (!matchesBay) {
             return res.status(400).json({
                 error: `Este QR no corresponde a tu bahía reservada (${reservation.bay_code}). Busca el QR de la bahía correcta.`
             });
@@ -292,6 +298,89 @@ router.post("/checkin", authenticate, async (req, res) => {
         console.error(error);
         res.status(500).json({
             error: "Error confirmando llegada"
+        });
+    }
+});
+router.post("/checkout", authenticate, async (req, res) => {
+    try {
+        const { scannedCode, reason = "Batería suficiente", details = "" } = req.body;
+        const reservation = await get(
+            `SELECT
+                r.id,
+                r.reservation_code AS code,
+                r.bay_id,
+                r.status,
+                b.code AS bay_code
+             FROM reservations r
+             JOIN bays b ON b.id = r.bay_id
+             WHERE r.user_id = $1
+               AND r.status = 'checked_in'
+             ORDER BY r.created_at DESC
+             LIMIT 1`,
+            [req.user.id]
+        );
+        if (!reservation) {
+            return res.status(404).json({
+                error: "No tienes una sesión de carga activa para finalizar."
+            });
+        }
+        if (scannedCode) {
+            const scannedClean = scannedCode.trim().toUpperCase();
+            const bayCodeUpper = reservation.bay_code.toUpperCase();
+            const matchesBay = scannedClean === bayCodeUpper
+                || scannedClean === `RIDENOW-BAY-${bayCodeUpper}`
+                || scannedClean === `ELECTRA-BAY-${bayCodeUpper}`
+                || scannedClean.includes(`BAHIA=${bayCodeUpper}`)
+                || scannedClean.endsWith(bayCodeUpper)
+                || scannedClean === reservation.code.toUpperCase();
+
+            if (!matchesBay) {
+                return res.status(400).json({
+                    error: `El código escaneado no coincide con tu bahía en carga (${reservation.bay_code}). Escanea el código de tu bahía para liberar el puerto.`
+                });
+            }
+        }
+        const fullReason = details ? `${reason}: ${details}` : reason;
+        try {
+            await run(
+                `UPDATE reservations
+                 SET status = 'completed',
+                     exit_reason = $2
+                 WHERE id = $1`,
+                [reservation.id, fullReason]
+            );
+        } catch (_) {
+            await run(
+                `UPDATE reservations
+                 SET status = 'completed'
+                 WHERE id = $1`,
+                [reservation.id]
+            );
+        }
+        await run(
+            `UPDATE bays
+             SET status = 'available',
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = $1`,
+            [reservation.bay_id]
+        );
+        const io = req.app.get("io");
+        if (io) {
+            io.emit("bayUpdated", {
+                bayId: reservation.bay_id,
+                status: "available"
+            });
+        }
+        res.json({
+            ok: true,
+            message: "¡Carga finalizada con éxito! La bahía ha sido liberada.",
+            bay: reservation.bay_code,
+            reason: fullReason
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            error: "Error finalizando la carga"
         });
     }
 });

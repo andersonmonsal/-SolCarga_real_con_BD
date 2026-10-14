@@ -185,8 +185,8 @@ function showApp() {
     document.getElementById("appView").classList.remove("hidden");
     if (user) {
         if (typeof initProfileAvatar === 'function') initProfileAvatar();
-        document.getElementById("welcomeUser").textContent = `RideNow`;
-        document.getElementById("greetingText").textContent = `${t("greeting")}, ${user.name} 👋`;
+        document.getElementById("welcomeUser").textContent = `ELECTRA`;
+        document.getElementById("greetingText").textContent = `${t("greeting")}, ${user.name}`;
         const pointsBadge = document.getElementById("userPointsBadge");
         if (pointsBadge && user.points !== undefined) {
             pointsBadge.textContent = `${user.points} Pts`;
@@ -389,6 +389,13 @@ function renderReservation(reservation, qr) {
         </button>
         <p class="checkin-hint-small">${t("confirmArrivalHint")}</p>
     ` : "";
+    const exitEarlyBtn = isCheckedIn ? `
+        <button id="exitEarlyBtn" class="danger-button" style="margin-top: 14px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="openExitEarlyModal()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Finalizar carga anticipadamente
+        </button>
+        <p class="checkin-hint-small" style="margin-top: 6px; font-size: 12px; color: var(--text-3); text-align: center;">Permite liberar el puerto para otros usuarios antes de la hora límite.</p>
+    ` : "";
     document.getElementById("qrContainer").innerHTML = `
         <div class="qr-card">
             <h3>${t("reservationConfirmed")}</h3>
@@ -402,6 +409,7 @@ function renderReservation(reservation, qr) {
                 <p><span>${t("duration")}</span><strong>${reservation.duration}</strong></p>
             </div>
             ${checkinBtn}
+            ${exitEarlyBtn}
             ${isActive ? `<button id="cancelReservation" class="danger-button" style="margin-top:12px">${t("cancelReservation")}</button>` : ""}
         </div>
     `;
@@ -525,24 +533,24 @@ document.addEventListener("languageChanged", () => {
     renderBays();
     const user = getUser();
     if (user) {
-        document.getElementById("greetingText").textContent = `${t("greeting")}, ${user.name} 👋`;
+        document.getElementById("greetingText").textContent = `${t("greeting")}, ${user.name}`;
     }
     if (currentScreen === "qr") loadReservation();
 });
 function showReservationConfirmModal(reservation) {
     const modal = document.getElementById("reservationModal");
     if (!modal) { showPage("qr"); return; }
-    document.getElementById("modalTitle").textContent = "¡Reserva confirmada! 🎉";
-    document.getElementById("modalDesc").textContent = "Tu bahía ha sido reservada. Muestra el QR al llegar.";
+    document.getElementById("modalTitle").textContent = "Reserva Confirmada";
+    document.getElementById("modalDesc").textContent = "Tu bahía ha sido reservada con éxito. Presenta tu credencial QR en la estación.";
     document.getElementById("modalDetails").innerHTML = `
-        <div class="rn-modal-row"><span>🏷️ Código</span><strong>${reservation.code}</strong></div>
-        <div class="rn-modal-row"><span>⚡ Bahía</span><strong>${reservation.bay}</strong></div>
-        <div class="rn-modal-row"><span>🚲 Vehículo</span><strong>${reservation.vehicle_type || selectedVehicleType}</strong></div>
-        <div class="rn-modal-row"><span>⏰ Llegada</span><strong>${reservation.arrival}</strong></div>
+        <div class="rn-modal-row"><span>Código de Reserva</span><strong>${reservation.code}</strong></div>
+        <div class="rn-modal-row"><span>Bahía Asignada</span><strong>${reservation.bay}</strong></div>
+        <div class="rn-modal-row"><span>Vehículo</span><strong>${reservation.vehicle_type || selectedVehicleType}</strong></div>
+        <div class="rn-modal-row"><span>Hora de Llegada</span><strong>${reservation.arrival}</strong></div>
     `;
     const primaryBtn = document.getElementById("modalPrimaryBtn");
     if (primaryBtn) {
-        primaryBtn.textContent = "Ver mi QR ▸";
+        primaryBtn.textContent = "Ver mi QR";
         primaryBtn.onclick = () => { closeReservationModal(); showPage("qr"); loadReservation(); };
     }
     modal.classList.remove("hidden");
@@ -598,12 +606,62 @@ function closeCancelModal() {
     const modal = document.getElementById("cancelModal");
     if (modal) modal.classList.add("hidden");
 }
+function openExitEarlyModal() {
+    const modal = document.getElementById("exitEarlyModal");
+    if (modal) modal.classList.remove("hidden");
+}
+function closeExitEarlyModal() {
+    const modal = document.getElementById("exitEarlyModal");
+    if (modal) modal.classList.add("hidden");
+}
+function startExitScan() {
+    const reasonInput = document.querySelector('input[name="exitReason"]:checked');
+    window._exitEarlyReason = reasonInput ? reasonInput.value : "Batería suficiente";
+    const detailsInput = document.getElementById("exitDetailsInput");
+    window._exitEarlyDetails = detailsInput ? detailsInput.value.trim() : "";
+    
+    closeExitEarlyModal();
+    openCheckinScanner('checkout');
+}
+async function handleExitEarlySubmit(event) {
+    if (event) event.preventDefault();
+    const reasonInput = document.querySelector('input[name="exitReason"]:checked');
+    const reason = reasonInput ? reasonInput.value : "Batería suficiente";
+    const detailsInput = document.getElementById("exitDetailsInput");
+    const details = detailsInput ? detailsInput.value.trim() : "";
+
+    const btn = document.getElementById("confirmExitBtn");
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Liberando bahía...";
+    }
+
+    try {
+        const myRes = await getMyReservation();
+        const bayCode = myRes ? myRes.bay : "";
+        const result = await checkoutReservation(bayCode, reason, details);
+        closeExitEarlyModal();
+        if (typeof showCheckoutSuccess === 'function') {
+            showCheckoutSuccess(result.message || "¡Carga finalizada con éxito! Has liberado la bahía.");
+        } else {
+            alert(result.message || "¡Carga finalizada con éxito!");
+            await loadBays();
+            await loadReservation();
+        }
+    } catch (err) {
+        alert(err.message || "Error finalizando la carga");
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = "⚡ Confirmar salida y liberar bahía";
+        }
+    }
+}
 function showCancelSuccessToast() {
     const toast = document.createElement("div");
     toast.className = "rn-toast success";
     toast.setAttribute("role", "alert");
     toast.setAttribute("aria-live", "assertive");
-    toast.innerHTML = `✅ Reserva cancelada. La bahía está libre.`;
+    toast.innerHTML = `Reserva cancelada. La bahía ha sido liberada.`;
     document.body.appendChild(toast);
     setTimeout(() => toast.classList.add("show"), 10);
     setTimeout(() => { toast.classList.remove("show"); setTimeout(() => toast.remove(), 400); }, 3500);
@@ -619,5 +677,6 @@ document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
         closeReservationModal();
         closeCancelModal();
+        closeExitEarlyModal();
     }
 });

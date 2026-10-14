@@ -45,3 +45,19 @@ async function cancelMyReservation(reservationId) {
     }
     return data;
 }
+async function checkoutReservation(scannedCode, reason = "Batería suficiente", details = "") {
+    const token = getToken();
+    const response = await fetch("/api/reservations/checkout", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ scannedCode, reason, details })
+    });
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.error || "Error finalizando carga");
+    }
+    return data;
+}
