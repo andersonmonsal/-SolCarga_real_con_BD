@@ -47,22 +47,34 @@ app.use(
     })
 );
 
+// Configuración segura de proxy para plataformas como Render (1 proxy inverso)
+app.set("trust proxy", 1);
+
 // 9. Rate limiting
+// Límite general para la API: 300 peticiones por cada 15 minutos por IP
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutos
-    max: 100, // Limita cada IP a 100 peticiones por ventana
+    max: 300, // Permite tráfico legítimo de la app (bahías, reservas, chat, etc.)
+    standardHeaders: true, // Devuelve cabeceras RateLimit-* (RFC)
+    legacyHeaders: false, // Deshabilita cabeceras X-RateLimit-*
     message: { error: "Demasiadas peticiones desde esta IP. Intenta de nuevo más tarde." }
 });
 
+// Límite específico para autenticación (login y registro):
+// Protege contra ataques de fuerza bruta permitiendo hasta 30 intentos fallidos por ventana de 15 minutos por IP
 const authLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hora
-    max: 20, // Limita intentos de login/registro a 20 por hora
+    windowMs: 15 * 60 * 1000, // 15 minutos
+    max: 30, // 30 intentos por ventana
+    skipSuccessfulRequests: true, // Los inicios de sesión y registros exitosos no consumen cuota
+    standardHeaders: true,
+    legacyHeaders: false,
     message: { error: "Demasiados intentos de autenticación. Intenta de nuevo más tarde." }
 });
 
-app.use("/api/", apiLimiter);
+// Aplicar limitadores
 app.use("/api/auth/login", authLimiter);
 app.use("/api/auth/register", authLimiter);
+app.use("/api/", apiLimiter);
 
 app.use(
     express.static(

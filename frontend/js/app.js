@@ -21,39 +21,75 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 });
 function setupAuth() {
+    let isSubmittingAuth = false;
+
     document.getElementById("loginForm").addEventListener("submit", async event => {
         event.preventDefault();
+        if (isSubmittingAuth) return;
+
+        const submitBtn = event.target.querySelector("button[type='submit']");
+        const originalBtnText = submitBtn ? submitBtn.textContent : "";
         const email = document.getElementById("loginEmail").value;
         const password = document.getElementById("loginPassword").value;
+        const msgEl = document.getElementById("loginMessage");
+        if (msgEl) msgEl.textContent = "";
+
         try {
+            isSubmittingAuth = true;
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = "0.7";
+            }
             await login(email, password);
             showApp();
         } catch (error) {
             if (error.needsVerification) {
                 showVerifyEmail(email);
             } else {
-                document.getElementById("loginMessage").textContent = error.message;
+                if (msgEl) msgEl.textContent = error.message;
+            }
+        } finally {
+            isSubmittingAuth = false;
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = "1";
+                submitBtn.textContent = originalBtnText;
             }
         }
     });
+
     document.getElementById("registerForm").addEventListener("submit", async event => {
         event.preventDefault();
+        if (isSubmittingAuth) return;
+
         const password = document.getElementById("registerPassword").value;
         const confirmPassword = document.getElementById("registerConfirmPassword").value;
+        const msgEl = document.getElementById("registerMessage");
+        if (msgEl) msgEl.textContent = "";
+
         if (password !== confirmPassword) {
-            document.getElementById("registerMessage").textContent = t("passwordsNoMatch");
+            if (msgEl) msgEl.textContent = t("passwordsNoMatch");
             return;
         }
         if (password.length < 8) {
-            document.getElementById("registerMessage").textContent = t("passwordMinLength");
+            if (msgEl) msgEl.textContent = t("passwordMinLength");
             return;
         }
         const specialCharRegex = /[!@#$%^&*()_+\-=\[\]{}|;:',.<>?\/\\~`"]/;
         if (!specialCharRegex.test(password)) {
-            document.getElementById("registerMessage").textContent = t("passwordNeedSpecial");
+            if (msgEl) msgEl.textContent = t("passwordNeedSpecial");
             return;
         }
+
+        const submitBtn = event.target.querySelector("button[type='submit']");
+        const originalBtnText = submitBtn ? submitBtn.textContent : "";
+
         try {
+            isSubmittingAuth = true;
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.style.opacity = "0.7";
+            }
             await register(
                 document.getElementById("registerName").value,
                 document.getElementById("registerLastName").value,
@@ -63,50 +99,93 @@ function setupAuth() {
             );
             showApp();
         } catch (error) {
-            document.getElementById("registerMessage").textContent = error.message;
+            if (msgEl) msgEl.textContent = error.message;
+        } finally {
+            isSubmittingAuth = false;
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = "1";
+                submitBtn.textContent = originalBtnText;
+            }
         }
     });
+
     const verifyForm = document.getElementById("verifyEmailForm");
     if (verifyForm) {
         verifyForm.addEventListener("submit", async event => {
             event.preventDefault();
+            if (isSubmittingAuth) return;
+
+            const submitBtn = event.target.querySelector("button[type='submit']");
             const code = document.getElementById("verifyCode").value;
             const email = document.getElementById("verifyEmailAddress").value;
+            const msgEl = document.getElementById("verifyMessage");
+            if (msgEl) msgEl.textContent = "";
+
             try {
+                isSubmittingAuth = true;
+                if (submitBtn) submitBtn.disabled = true;
                 const res = await verifyEmail(email, code);
                 alert(res.message);
                 showLogin();
             } catch (error) {
-                document.getElementById("verifyMessage").textContent = error.message;
+                if (msgEl) msgEl.textContent = error.message;
+            } finally {
+                isSubmittingAuth = false;
+                if (submitBtn) submitBtn.disabled = false;
             }
         });
     }
+
     const forgotForm = document.getElementById("forgotPasswordForm");
     if (forgotForm) {
         forgotForm.addEventListener("submit", async event => {
             event.preventDefault();
+            if (isSubmittingAuth) return;
+
+            const submitBtn = event.target.querySelector("button[type='submit']");
             const email = document.getElementById("forgotEmail").value;
+            const msgEl = document.getElementById("forgotMessage");
+            if (msgEl) msgEl.textContent = "";
+
             try {
+                isSubmittingAuth = true;
+                if (submitBtn) submitBtn.disabled = true;
                 const res = await forgotPassword(email);
                 alert(res.message);
                 showResetPassword();
             } catch (error) {
-                document.getElementById("forgotMessage").textContent = error.message;
+                if (msgEl) msgEl.textContent = error.message;
+            } finally {
+                isSubmittingAuth = false;
+                if (submitBtn) submitBtn.disabled = false;
             }
         });
     }
+
     const resetForm = document.getElementById("resetPasswordForm");
     if (resetForm) {
         resetForm.addEventListener("submit", async event => {
             event.preventDefault();
+            if (isSubmittingAuth) return;
+
+            const submitBtn = event.target.querySelector("button[type='submit']");
             const token = document.getElementById("resetToken").value;
             const newPassword = document.getElementById("newPassword").value;
+            const msgEl = document.getElementById("resetMessage");
+            if (msgEl) msgEl.textContent = "";
+
             try {
+                isSubmittingAuth = true;
+                if (submitBtn) submitBtn.disabled = true;
                 const res = await resetPassword(token, newPassword);
                 alert(res.message);
                 showLogin();
             } catch (error) {
-                document.getElementById("resetMessage").textContent = error.message;
+                if (msgEl) msgEl.textContent = error.message;
+            } finally {
+                isSubmittingAuth = false;
+                if (submitBtn) submitBtn.disabled = false;
             }
         });
     }
