@@ -164,9 +164,10 @@ function clearChatHistory() {
     chatHistory = [];
     const container = document.getElementById("aiMessages");
     if (!container) return;
+    const welcome = typeof t === "function" ? t("chatWelcome") : "¡Hola! Soy tu asistente de RideNow. ¿En qué te puedo ayudar? ☀️";
     container.innerHTML = `
         <div class="ai-message bot">
-            <div class="msg-bubble">¡Hola! Soy tu asistente de RideNow. ¿En qué te puedo ayudar? ☀️</div>
+            <div class="msg-bubble">${welcome}</div>
         </div>
     `;
 }
