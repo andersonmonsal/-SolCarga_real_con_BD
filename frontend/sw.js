@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'electra-v8';
+const CACHE_NAME = 'ridenow-v9';
 const STATIC_ASSETS = [
   '/',
   '/css/styles.css',

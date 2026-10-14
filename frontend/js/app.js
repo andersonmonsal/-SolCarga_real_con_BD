@@ -185,8 +185,8 @@ function showApp() {
     document.getElementById("appView").classList.remove("hidden");
     if (user) {
         if (typeof initProfileAvatar === 'function') initProfileAvatar();
-        document.getElementById("welcomeUser").textContent = `ELECTRA`;
-        document.getElementById("greetingText").textContent = `${t("greeting")}, ${user.name}`;
+        document.getElementById("welcomeUser").textContent = `RideNow`;
+        document.getElementById("greetingText").textContent = `${t("greeting")}, ${user.name} 👋`;
         const pointsBadge = document.getElementById("userPointsBadge");
         if (pointsBadge && user.points !== undefined) {
             pointsBadge.textContent = `${user.points} Pts`;
@@ -533,24 +533,24 @@ document.addEventListener("languageChanged", () => {
     renderBays();
     const user = getUser();
     if (user) {
-        document.getElementById("greetingText").textContent = `${t("greeting")}, ${user.name}`;
+        document.getElementById("greetingText").textContent = `${t("greeting")}, ${user.name} 👋`;
     }
     if (currentScreen === "qr") loadReservation();
 });
 function showReservationConfirmModal(reservation) {
     const modal = document.getElementById("reservationModal");
     if (!modal) { showPage("qr"); return; }
-    document.getElementById("modalTitle").textContent = "Reserva Confirmada";
-    document.getElementById("modalDesc").textContent = "Tu bahía ha sido reservada con éxito. Presenta tu credencial QR en la estación.";
+    document.getElementById("modalTitle").textContent = "¡Reserva confirmada! 🎉";
+    document.getElementById("modalDesc").textContent = "Tu bahía ha sido reservada con éxito. Presenta tu credencial QR al llegar.";
     document.getElementById("modalDetails").innerHTML = `
-        <div class="rn-modal-row"><span>Código de Reserva</span><strong>${reservation.code}</strong></div>
-        <div class="rn-modal-row"><span>Bahía Asignada</span><strong>${reservation.bay}</strong></div>
-        <div class="rn-modal-row"><span>Vehículo</span><strong>${reservation.vehicle_type || selectedVehicleType}</strong></div>
-        <div class="rn-modal-row"><span>Hora de Llegada</span><strong>${reservation.arrival}</strong></div>
+        <div class="rn-modal-row"><span>🏷️ Código de Reserva</span><strong>${reservation.code}</strong></div>
+        <div class="rn-modal-row"><span>⚡ Bahía Asignada</span><strong>${reservation.bay}</strong></div>
+        <div class="rn-modal-row"><span>🚲 Tipo de Vehículo</span><strong>${reservation.vehicle_type || selectedVehicleType}</strong></div>
+        <div class="rn-modal-row"><span>⏰ Hora de Llegada</span><strong>${reservation.arrival}</strong></div>
     `;
     const primaryBtn = document.getElementById("modalPrimaryBtn");
     if (primaryBtn) {
-        primaryBtn.textContent = "Ver mi QR";
+        primaryBtn.textContent = "Ver mi QR ▸";
         primaryBtn.onclick = () => { closeReservationModal(); showPage("qr"); loadReservation(); };
     }
     modal.classList.remove("hidden");

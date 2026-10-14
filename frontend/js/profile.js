@@ -66,15 +66,15 @@ function renderProfilePanel(user) {
     const initials = getInitials(user.name, user.last_name);
     const photo = user.profile_photo;
     const memberSince = user.created_at ? new Date(user.created_at).toLocaleDateString('es-CO', {
-        year: 'numeric', month: 'short', day: 'numeric'
-    }) : 'Reciente';
+        year: 'numeric', month: 'long', day: 'numeric'
+    }) : 'Hace poco';
 
     const pointsLevel = getPointsLevel(user.points || 0);
 
     container.innerHTML = `
         <!-- Close Button -->
         <button class="profile-close-btn" onclick="closeProfilePanel()" aria-label="Cerrar perfil">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
 
         <!-- Profile Header -->
@@ -96,62 +96,54 @@ function renderProfilePanel(user) {
             <h2 class="profile-name">${user.name} ${user.last_name || ''}</h2>
             <p class="profile-email">${user.email}</p>
             <div class="profile-role-badge ${user.role === 'admin' ? 'role-admin' : 'role-user'}">
-                ${user.role === 'admin' ? 'Administrador' : 'Usuario'}
+                ${user.role === 'admin' ? '👑 Administrador' : '👤 Usuario'}
             </div>
         </div>
 
         <!-- Points Section -->
         <div class="profile-points-section">
             <div class="profile-points-header">
-                <div class="profile-points-icon">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
-                </div>
+                <div class="profile-points-icon">⚡</div>
                 <div>
                     <div class="profile-points-value">${user.points || 0}</div>
-                    <div class="profile-points-label">Puntos de energía solar</div>
+                    <div class="profile-points-label">Puntos acumulados</div>
                 </div>
             </div>
             <div class="profile-points-bar-wrap">
                 <div class="profile-points-bar" style="width: ${Math.min((user.points || 0) / pointsLevel.next * 100, 100)}%"></div>
             </div>
             <div class="profile-points-level">
-                <span class="profile-level-badge">${pointsLevel.name}</span>
-                <span class="profile-level-next">${pointsLevel.next - (user.points || 0)} pts para nivel ${pointsLevel.nextName}</span>
+                <span class="profile-level-badge">${pointsLevel.emoji} ${pointsLevel.name}</span>
+                <span class="profile-level-next">${pointsLevel.next - (user.points || 0)} pts para ${pointsLevel.nextName}</span>
             </div>
             <div class="profile-points-info">
                 <div class="profile-points-info-item">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="16" height="10" rx="2"/><path d="M22 11v2"/></svg>
-                    <span>+3 puntos por cada sesión de carga completada</span>
+                    <span>🔋</span>
+                    <span>+3 pts por cada carga completada</span>
                 </div>
                 <div class="profile-points-info-item">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-                    <span>Consumo 100% compensado con microred fotovoltaica</span>
+                    <span>☀️</span>
+                    <span>Cuidas el planeta con energía solar</span>
                 </div>
             </div>
         </div>
 
         <!-- User Info Section -->
         <div class="profile-info-section">
-            <h3 class="profile-section-title">Información de cuenta</h3>
+            <h3 class="profile-section-title">Información</h3>
             <div class="profile-info-row">
-                <span class="profile-info-icon">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg>
-                </span>
+                <span class="profile-info-icon">🚗</span>
                 <span class="profile-info-label">Vehículo</span>
-                <span class="profile-info-value">${user.vehicle_type || 'No especificado'}</span>
+                <span class="profile-info-value">${user.vehicle_type || 'No definido'}</span>
             </div>
             <div class="profile-info-row">
-                <span class="profile-info-icon">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                </span>
+                <span class="profile-info-icon">📅</span>
                 <span class="profile-info-label">Miembro desde</span>
                 <span class="profile-info-value">${memberSince}</span>
             </div>
             <div class="profile-info-row">
-                <span class="profile-info-icon">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-1.5 6.1L7 20.5a2.12 2.12 0 0 1-3-3L14.4 7.1"/><circle cx="17.5" cy="6.5" r="3.5"/></svg>
-                </span>
-                <span class="profile-info-label">Rol del sistema</span>
+                <span class="profile-info-icon">🔑</span>
+                <span class="profile-info-label">Rol</span>
                 <span class="profile-info-value">${user.role === 'admin' ? 'Administrador' : 'Usuario'}</span>
             </div>
         </div>
@@ -159,7 +151,7 @@ function renderProfilePanel(user) {
         <!-- Actions Section -->
         <div class="profile-actions-section">
             <button class="profile-action-btn profile-action-logout" onclick="profileLogout()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
                     <polyline points="16 17 21 12 16 7"/>
                     <line x1="21" y1="12" x2="9" y2="12"/>
@@ -167,7 +159,7 @@ function renderProfilePanel(user) {
                 Cerrar sesión
             </button>
             <button class="profile-action-btn profile-action-delete" onclick="profileDeleteAccount()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="3 6 5 6 21 6"/>
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                     <line x1="10" y1="11" x2="10" y2="17"/>
@@ -178,7 +170,7 @@ function renderProfilePanel(user) {
         </div>
 
         <!-- Version -->
-        <p class="profile-version">ELECTRA Enterprise Platform • v1.0.4</p>
+        <p class="profile-version">ELECTRA v1.0 — Energía solar inteligente ☀️</p>
     `;
 
     // Animate elements in
@@ -190,11 +182,11 @@ function renderProfilePanel(user) {
 
 // ─── Points Level System ───────────────────────────────────
 function getPointsLevel(points) {
-    if (points >= 100) return { name: 'Nivel 4 — Élite Solar', next: 150, nextName: 'Máximo' };
-    if (points >= 50)  return { name: 'Nivel 3 — Avanzado', next: 100, nextName: 'Élite Solar' };
-    if (points >= 25)  return { name: 'Nivel 2 — Frecuente', next: 50,  nextName: 'Avanzado' };
-    if (points >= 10)  return { name: 'Nivel 1 — Inicial', next: 25,  nextName: 'Frecuente' };
-    return { name: 'Nivel Base', next: 10, nextName: 'Inicial' };
+    if (points >= 100) return { name: 'Leyenda Solar', emoji: '🌟', next: 150, nextName: 'Máximo' };
+    if (points >= 50)  return { name: 'Eco Champion', emoji: '🏆', next: 100, nextName: 'Leyenda Solar' };
+    if (points >= 25)  return { name: 'Cargador Pro', emoji: '⚡', next: 50,  nextName: 'Eco Champion' };
+    if (points >= 10)  return { name: 'Explorador', emoji: '🌱', next: 25,  nextName: 'Cargador Pro' };
+    return { name: 'Novato', emoji: '🌿', next: 10, nextName: 'Explorador' };
 }
 
 // ─── Initials ──────────────────────────────────────────────
@@ -313,8 +305,8 @@ function profileLogout() {
 async function profileDeleteAccount() {
     // Show custom confirm dialog
     const confirmed = await showProfileConfirm(
-        'Eliminar cuenta',
-        '¿Estás seguro de que deseas eliminar tu cuenta? Esta acción es permanente y no se puede deshacer. Todos tus datos, reservas y puntos acumulados se perderán.'
+        '⚠️ Eliminar cuenta',
+        '¿Estás seguro de que deseas eliminar tu cuenta? Esta acción es permanente y no se puede deshacer. Todos tus datos, reservas y puntos se perderán.'
     );
     if (!confirmed) return;
 
@@ -331,7 +323,7 @@ async function profileDeleteAccount() {
         });
 
         if (res.ok) {
-            showProfileToast('Cuenta eliminada exitosamente', 'success');
+            showProfileToast('✅ Cuenta eliminada exitosamente', 'success');
             setTimeout(() => {
                 clearSession();
                 closeProfilePanel();
@@ -339,15 +331,15 @@ async function profileDeleteAccount() {
             }, 1500);
         } else {
             const data = await res.json();
-            showProfileToast(data.error || 'Error eliminando la cuenta', 'error');
+            showProfileToast(`❌ ${data.error || 'Error eliminando la cuenta'}`, 'error');
         }
     } catch (error) {
-        showProfileToast('Error de conexión con el servidor', 'error');
+        showProfileToast('❌ Error de conexión', 'error');
     } finally {
         if (deleteBtn) {
             deleteBtn.disabled = false;
             deleteBtn.innerHTML = `
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="3 6 5 6 21 6"/>
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
                     <line x1="10" y1="11" x2="10" y2="17"/>
@@ -365,16 +357,12 @@ function showProfileConfirm(title, message) {
         overlay.className = 'profile-confirm-overlay';
         overlay.innerHTML = `
             <div class="profile-confirm-card">
-                <div class="profile-confirm-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-                    </svg>
-                </div>
+                <div class="profile-confirm-icon">⚠️</div>
                 <h3>${title}</h3>
                 <p>${message}</p>
                 <div class="profile-confirm-actions">
                     <button class="profile-confirm-cancel">Cancelar</button>
-                    <button class="profile-confirm-delete">Confirmar eliminación</button>
+                    <button class="profile-confirm-delete">Sí, eliminar</button>
                 </div>
             </div>
         `;
