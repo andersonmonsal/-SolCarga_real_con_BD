@@ -189,14 +189,24 @@ function setupAuth() {
             }
         });
     }
-    document.getElementById("showRegister").onclick = () => {
+    const switchToRegister = () => {
         document.getElementById("loginView").classList.add("hidden");
         document.getElementById("registerView").classList.remove("hidden");
     };
-    document.getElementById("showLogin").onclick = () => {
+    const switchToLogin = () => {
         document.getElementById("loginView").classList.remove("hidden");
         document.getElementById("registerView").classList.add("hidden");
     };
+
+    const showRegBtn = document.getElementById("showRegister");
+    if (showRegBtn) showRegBtn.onclick = switchToRegister;
+    const tabRegBtn = document.getElementById("tabRegister");
+    if (tabRegBtn) tabRegBtn.onclick = switchToRegister;
+
+    const showLogBtn = document.getElementById("showLogin");
+    if (showLogBtn) showLogBtn.onclick = switchToLogin;
+    const tabLogBtn2 = document.getElementById("tabLogin2");
+    if (tabLogBtn2) tabLogBtn2.onclick = switchToLogin;
     const logoutBtn = document.getElementById("logoutButton");
     if (logoutBtn) {
         logoutBtn.onclick = () => {
