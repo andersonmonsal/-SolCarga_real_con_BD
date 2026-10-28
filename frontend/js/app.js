@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setupAI();
     loadSavedTheme();
     setupPasswordStrength();
+    setupLiveClock();
     if (getToken()) {
         showApp();
     } else {
@@ -20,6 +21,28 @@ document.addEventListener("DOMContentLoaded", () => {
         showLogin();
     }
 });
+
+function setupLiveClock() {
+    function updateClocks() {
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const dateStr = now.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
+        const fullDateStr = now.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+        const timeEl = document.getElementById("liveClockTime");
+        const dateEl = document.getElementById("liveClockDate");
+        if (timeEl) timeEl.textContent = timeStr;
+        if (dateEl) dateEl.textContent = dateStr;
+
+        const resCurrentTimeEl = document.getElementById("reservationCurrentTimeText");
+        if (resCurrentTimeEl) {
+            resCurrentTimeEl.textContent = `${fullDateStr} • ${timeStr}`;
+        }
+    }
+
+    updateClocks();
+    setInterval(updateClocks, 1000);
+}
 function setupAuth() {
     let isSubmittingAuth = false;
 
@@ -407,6 +430,16 @@ function openReservation(bay) {
     document.querySelectorAll('.vehicle-option').forEach(btn => {
         btn.classList.toggle('active', btn.dataset.vehicle === 'Patineta');
     });
+
+    const dateInput = document.getElementById("reservationDateInput");
+    if (dateInput) {
+        const todayStr = new Date().toISOString().split("T")[0];
+        if (!dateInput.value) {
+            dateInput.value = todayStr;
+        }
+        dateInput.min = todayStr;
+    }
+
     renderOptions();
     showPage("reservation");
 }
@@ -420,6 +453,7 @@ function renderOptions() {
 }
 document.getElementById("confirmReservation").onclick = async () => {
     try {
+        const dateInput = document.getElementById("reservationDateInput") ? document.getElementById("reservationDateInput").value : "";
         const timeInput = document.getElementById("arrivalInput").value;
         const departureInput = document.getElementById("departureInput").value;
         if (!timeInput || !departureInput) {
@@ -438,6 +472,9 @@ document.getElementById("confirmReservation").onclick = async () => {
         selectedArrival = timeInput;
         selectedDuration = departureInput;
         const data = await createReservation(selectedVehicleType);
+        if (dateInput && data.reservation) {
+            data.reservation.reservation_date = dateInput;
+        }
         showReservationConfirmModal(data.reservation);
         speak(t("reservationConfirmedMsg"));
     } catch (error) {
@@ -485,6 +522,7 @@ function renderReservation(reservation, qr) {
         </button>
         <p class="checkin-hint-small" style="margin-top: 6px; font-size: 12px; color: var(--text-3); text-align: center;">Permite liberar el puerto para otros usuarios antes de la hora límite.</p>
     ` : "";
+    const resCardDate = reservation.created_at ? new Date(reservation.created_at).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' }) : new Date().toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
     document.getElementById("qrContainer").innerHTML = `
         <div class="qr-card">
             <h3>${t("reservationConfirmed")}</h3>
@@ -492,10 +530,11 @@ function renderReservation(reservation, qr) {
             <img src="${qr}" alt="${t("myQR")} ${reservation.code}">
             <strong>${reservation.code}</strong>
             <div class="reservation-details">
+                <p><span>📅 Fecha</span><strong>${resCardDate}</strong></p>
                 <p><span>${t("bay")}</span><strong>${reservation.bay}</strong></p>
                 <p><span>${t("vehicle")}</span><strong>${reservation.vehicle_type}</strong></p>
                 <p><span>${t("arrival")}</span><strong>${reservation.arrival}</strong></p>
-                <p><span>${t("duration")}</span><strong>${reservation.duration}</strong></p>
+                <p><span>${t("departure") || "Salida"}</span><strong>${reservation.duration}</strong></p>
             </div>
             ${checkinBtn}
             ${exitEarlyBtn}
@@ -631,11 +670,13 @@ function showReservationConfirmModal(reservation) {
     if (!modal) { showPage("qr"); return; }
     document.getElementById("modalTitle").textContent = "¡Reserva confirmada! 🎉";
     document.getElementById("modalDesc").textContent = "Tu bahía ha sido reservada con éxito. Presenta tu credencial QR al llegar.";
+    const resDateStr = reservation.reservation_date || (reservation.created_at ? new Date(reservation.created_at).toLocaleDateString() : new Date().toLocaleDateString());
     document.getElementById("modalDetails").innerHTML = `
         <div class="rn-modal-row"><span>🏷️ Código de Reserva</span><strong>${reservation.code}</strong></div>
+        <div class="rn-modal-row"><span>📅 Fecha</span><strong>${resDateStr}</strong></div>
         <div class="rn-modal-row"><span>⚡ Bahía Asignada</span><strong>${reservation.bay}</strong></div>
         <div class="rn-modal-row"><span>🚲 Tipo de Vehículo</span><strong>${reservation.vehicle_type || selectedVehicleType}</strong></div>
-        <div class="rn-modal-row"><span>⏰ Hora de Llegada</span><strong>${reservation.arrival}</strong></div>
+        <div class="rn-modal-row"><span>⏰ Horario</span><strong>${reservation.arrival} - ${reservation.duration || ''}</strong></div>
     `;
     const primaryBtn = document.getElementById("modalPrimaryBtn");
     if (primaryBtn) {

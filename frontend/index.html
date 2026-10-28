@@ -217,6 +217,10 @@
                 <small id="welcomeUser"></small>
             </div>
             <div class="top-actions">
+                <div id="liveClock" class="live-clock" title="Fecha y hora actual">
+                    <span class="live-clock-time" id="liveClockTime">--:--:--</span>
+                    <span class="live-clock-date" id="liveClockDate">---</span>
+                </div>
                 <button id="languageButton" aria-label="Cambiar idioma">ES</button>
                 <button id="accessibilityButton" aria-label="Opciones de accesibilidad">♿</button>
                 <button id="profileAvatarBtn" class="header-profile-btn" aria-label="Mi Perfil" onclick="toggleProfilePanel()">
@@ -288,6 +292,14 @@
                     
                 </div>
 
+                <div class="reservation-live-indicator" id="reservationLiveBadge">
+                    <span class="live-dot-pulse"></span>
+                    <div class="reservation-live-text">
+                        <span class="reservation-live-label">Hora y fecha actual:</span>
+                        <strong id="reservationCurrentTimeText">--:--:--</strong>
+                    </div>
+                </div>
+
                 <label data-i18n="vehicleQuestion">¿Qué vehículo vas a cargar?</label>
                 <div class="vehicle-selector" id="vehicleSelector">
                     <button type="button" class="vehicle-option active" data-vehicle="Patineta" onclick="selectVehicle('Patineta')">
@@ -298,6 +310,11 @@
                         <span class="vehicle-option-icon">🚲</span>
                         <span class="vehicle-option-label" data-i18n="vehicleBike">Bicicleta Eléctrica</span>
                     </button>
+                </div>
+
+                <label for="reservationDateInput">📅 Fecha de reserva</label>
+                <div style="margin-top: 5px; margin-bottom: 15px;">
+                    <input type="date" id="reservationDateInput" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 16px; width: 100%; background: var(--surface); color: var(--text);">
                 </div>
 
                 <label data-i18n="arrival">Hora de llegada (05:00 - 22:00)</label>
