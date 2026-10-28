@@ -216,6 +216,12 @@
                 <span class="header-subtitle">Movilidad eléctrica inteligente</span>
                 <small id="welcomeUser"></small>
             </div>
+            <nav class="desktop-header-nav" aria-label="Navegación de escritorio">
+                <button class="desktop-nav-link active" data-page="home" onclick="showPage('home')">Inicio</button>
+                <button class="desktop-nav-link" data-page="qr" onclick="showPage('qr')">Mi QR</button>
+                <button class="desktop-nav-link" data-page="location" onclick="showPage('location')">Ubicación</button>
+                <button class="desktop-nav-link" data-page="ai" onclick="showPage('ai')">Asistente</button>
+            </nav>
             <div class="top-actions">
                 <div id="liveClock" class="live-clock" title="Fecha y hora actual">
                     <span class="live-clock-time" id="liveClockTime">--:--:--</span>
@@ -249,6 +255,48 @@
                     </div>
                     <div class="hero-sun">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z"/></svg>
+                    </div>
+                </div>
+
+                <!-- Clima en Vivo y Estimador Inteligente de Carga -->
+                <div class="weather-smart-card" id="weatherSmartCard">
+                    <div class="weather-header-row">
+                        <div class="weather-location-info">
+                            <span class="weather-icon-live" id="weatherIcon">☀️</span>
+                            <div>
+                                <div class="weather-temp-line">
+                                    <strong id="weatherTemp">--°C</strong>
+                                    <span class="weather-condition" id="weatherCondition">Cargando clima...</span>
+                                </div>
+                                <small class="weather-city" id="weatherCity">📍 Medellín, Campus UdeM</small>
+                            </div>
+                        </div>
+                        <div class="weather-badge-pill" id="weatherEfficiencyBadge">
+                            <span>⚡ Eficiencia Óptima</span>
+                        </div>
+                    </div>
+
+                    <div class="weather-charge-estimate" id="weatherChargeEstimate">
+                        <div class="estimate-icon">🛴</div>
+                        <div class="estimate-body">
+                            <strong>Tiempo estimado de carga de tu patineta:</strong>
+                            <p id="weatherEstimateText">Analizando temperatura ambiente y radiación solar...</p>
+                        </div>
+                    </div>
+
+                    <div class="weather-stats-row">
+                        <div class="weather-stat-chip">
+                            <span>Humedad</span>
+                            <strong id="weatherHumidity">--%</strong>
+                        </div>
+                        <div class="weather-stat-chip">
+                            <span>Viento</span>
+                            <strong id="weatherWind">-- km/h</strong>
+                        </div>
+                        <div class="weather-stat-chip">
+                            <span>Radiación Solar</span>
+                            <strong id="weatherSolar">Alta ☀️</strong>
+                        </div>
                     </div>
                 </div>
 
