@@ -218,6 +218,7 @@
             </div>
             <nav class="desktop-header-nav" aria-label="Navegación de escritorio">
                 <button class="desktop-nav-link active" data-page="home" onclick="showPage('home')">Inicio</button>
+                <button class="desktop-nav-link" data-page="bays" onclick="showPage('bays')">⚡ Bahías</button>
                 <button class="desktop-nav-link" data-page="qr" onclick="showPage('qr')">Mi QR</button>
                 <button class="desktop-nav-link" data-page="location" onclick="showPage('location')">Ubicación</button>
                 <button class="desktop-nav-link" data-page="ai" onclick="showPage('ai')">Asistente</button>
@@ -238,23 +239,71 @@
         <main id="mainContent">
 
             
+            <!-- =========================================================
+                 SECCIÓN INICIO (HOME 10/10 - ACOGEDOR, ELEGANTE Y COMPLETO)
+                 ========================================================= -->
             <section id="homeSection" class="page-section">
 
-                <div style="margin-bottom: 25px;">
-                    <h2 style="margin: 0; font-size: 26px;" id="greetingText" data-i18n="greeting">Hola 👋</h2>
-                    <p style="color: var(--muted); margin-top: 5px; font-size: 16px;" data-i18n="greetingSubtitle">¿Qué deseas hacer?</p>
-                    <button class="primary-button" style="width: auto; margin-top: 10px; padding: 10px 24px;" data-i18n="findBay" onclick="document.getElementById('baysGrid').scrollIntoView({behavior: 'smooth'})">Buscar una bahía &rarr;</button>
+                <!-- Hero Banner de Bienvenida Premium -->
+                <div class="welcome-hero-banner">
+                    <div class="welcome-hero-content">
+                        <span class="welcome-pill">🌱 Movilidad Sostenible & Energía Solar</span>
+                        <h1 class="welcome-title"><span id="greetingText" data-i18n="greeting">Hola</span> <span class="welcome-wave">👋</span></h1>
+                        <p class="welcome-desc">Bienvenido a la red de carga solar inteligente de ELECTRA. Conecta tu vehículo eléctrico con energía 100% limpia mientras estudias o trabajas en el campus.</p>
+                        <div class="welcome-actions">
+                            <button class="welcome-primary-btn" onclick="showPage('bays')">
+                                <span class="btn-icon">⚡</span>
+                                <span>Ver y Reservar Bahías</span>
+                            </button>
+                            <button class="welcome-secondary-btn" onclick="showPage('location')">
+                                <span class="btn-icon">📍</span>
+                                <span>Cómo llegar a la estación</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="welcome-hero-image-wrap">
+                        <img src="/img/home-hero.jpg" alt="Estación ELECTRA" class="welcome-hero-img">
+                        <div class="hero-image-overlay-badge">
+                            <span class="badge-dot"></span>
+                            <span>Estación Activa UdeM</span>
+                        </div>
+                    </div>
                 </div>
 
-                <img src="/img/home-hero.jpg" alt="Estación ELECTRA" style="width: 100%; height: 200px; object-fit: cover; border-radius: 16px; margin-bottom: 20px; box-shadow: var(--shadow-sm);">
-
-                <div class="hero">
-                    <div>
-                        <h2>Energía <span>100% renovable</span></h2>
-                        <p>Sostenibilidad en movimiento</p>
+                <!-- Tarjetas de Acceso Rápido y Métricas en Vivo -->
+                <div class="home-quick-metrics">
+                    <div class="metric-card interactive" onclick="showPage('bays')">
+                        <div class="metric-icon-bubble green">⚡</div>
+                        <div class="metric-data">
+                            <span class="metric-label">Bahías Disponibles</span>
+                            <div class="metric-value-row">
+                                <strong id="homeAvailableCount">Cargando...</strong>
+                                <span class="metric-trend positive">En vivo</span>
+                            </div>
+                        </div>
+                        <span class="metric-arrow">→</span>
                     </div>
-                    <div class="hero-sun">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z"/></svg>
+
+                    <div class="metric-card interactive" onclick="showPage('qr')">
+                        <div class="metric-icon-bubble blue">📱</div>
+                        <div class="metric-data">
+                            <span class="metric-label">Mi Reserva Activa</span>
+                            <div class="metric-value-row">
+                                <strong id="homeReservationSnippet">Ver mi QR</strong>
+                            </div>
+                        </div>
+                        <span class="metric-arrow">→</span>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="metric-icon-bubble yellow">☀️</div>
+                        <div class="metric-data">
+                            <span class="metric-label">Puntos Eco Acumulados</span>
+                            <div class="metric-value-row">
+                                <strong id="userPointsBadge">0 Pts</strong>
+                                <span class="metric-trend eco">100% Limpio</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -300,10 +349,38 @@
                     </div>
                 </div>
 
+                <!-- Pasos sencillos para cargar en ELECTRA -->
+                <div class="home-guide-card">
+                    <h3 class="guide-title">¿Cómo usar ELECTRA en 3 sencillos pasos?</h3>
+                    <div class="guide-steps-grid">
+                        <div class="guide-step-item" onclick="showPage('bays')">
+                            <div class="step-number">1</div>
+                            <h4>Elige y Reserva</h4>
+                            <p>Selecciona tu puerto preferido en la pestaña de <strong>Bahías</strong> y aparta tu hora.</p>
+                        </div>
+                        <div class="guide-step-item" onclick="showPage('qr')">
+                            <div class="step-number">2</div>
+                            <h4>Escanea tu QR</h4>
+                            <p>Llega al campus, abre <strong>Mi QR</strong> y acércalo al sensor o confirma tu llegada.</p>
+                        </div>
+                        <div class="guide-step-item">
+                            <div class="step-number">3</div>
+                            <h4>Carga 100% Verde</h4>
+                            <p>Conecta tu patineta o bicicleta eléctrica y acumula puntos mientras disfrutas del campus.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- =========================================================
+                 SECCIÓN DEDICADA DE BAHÍAS DE CARGA
+                 ========================================================= -->
+            <section id="baysSection" class="page-section hidden">
                 <div class="section-title">
                     <div>
-                        <h2 data-i18n="chargingBays">Bahías disponibles</h2>
-                        <p data-i18n="realTime">Disponibilidad en tiempo real</p>
+                        <h2 data-i18n="chargingBays">Bahías de carga</h2>
+                        <p data-i18n="realTime">Disponibilidad y reserva en tiempo real</p>
                     </div>
                     <strong id="availableCount">0 / 8</strong>
                 </div>
@@ -318,16 +395,6 @@
                 <div id="baysGrid" class="bays-grid" role="list" aria-label="Lista de bahías de carga">
                     
                 </div>
-
-                
-                <div class="solar-points-card" role="region" aria-label="Puntos por energía solar">
-                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                        <h3 style="margin: 0; font-size: 14px; font-weight: 700; color: var(--text);">Puntos acumulados</h3>
-                        <span id="userPointsBadge" style="font-size: 12px; font-weight: 700; color: var(--yellow); background: var(--yellow-light); border-radius: 20px; padding: 2px 8px; border: 1px solid var(--yellow-border);">0 Pts</span>
-                    </div>
-                    <p style="margin: 0; color: var(--muted); font-size: 12px; line-height: 1.5;">Ganas puntos al cargar y cuidas el medio ambiente.</p>
-                </div>
-
             </section>
 
             
@@ -503,9 +570,14 @@
 
         
         <nav class="bottom-nav" role="navigation" aria-label="Navegación principal">
-            <button class="nav-button active" data-page="home" aria-label="Inicio - Ver bahías de carga" aria-current="page">
+            <button class="nav-button active" data-page="home" aria-label="Inicio" aria-current="page">
                 <div class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></div>
                 <span data-i18n="home">Inicio</span>
+            </button>
+
+            <button class="nav-button" data-page="bays" aria-label="Bahías de carga disponibles">
+                <div class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+                <span>Bahías</span>
             </button>
 
 

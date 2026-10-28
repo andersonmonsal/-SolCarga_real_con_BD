@@ -460,6 +460,7 @@ function showPage(page) {
         section.classList.remove("hidden");
         const titles = {
             home:        currentLanguage === "es" ? "Pantalla de inicio" : "Home screen",
+            bays:        currentLanguage === "es" ? "Bahías de carga" : "Charging bays",
             location:    currentLanguage === "es" ? "Ubicación de la estación" : "Station location",
             qr:          currentLanguage === "es" ? "Tu reserva y código QR" : "Your reservation and QR code",
             ai:          currentLanguage === "es" ? "Asistente RideBot" : "RideBot Assistant",
@@ -474,6 +475,7 @@ function showPage(page) {
         button.classList.toggle("active", button.dataset.page === page);
     });
     if (page === "qr")   loadReservation();
+    if (page === "bays") loadBays();
     if (page === "home") {
         loadBays();
         loadLiveWeather();
@@ -483,16 +485,22 @@ async function loadBays() {
     try {
         const response = await fetch("/api/bays");
         bays = await response.json();
-        if (currentScreen === "home") renderBays();
+        renderBays();
     } catch (error) {
         console.error(error);
     }
 }
 function renderBays() {
     const grid = document.getElementById("baysGrid");
+    if (!grid) return;
     grid.innerHTML = "";
     const available = bays.filter(bay => bay.status === "available").length;
-    document.getElementById("availableCount").textContent = `${available} / ${bays.length}`;
+    const availEl = document.getElementById("availableCount");
+    if (availEl) availEl.textContent = `${available} / ${bays.length}`;
+    
+    const homeAvailEl = document.getElementById("homeAvailableCount");
+    if (homeAvailEl) homeAvailEl.textContent = `${available} de ${bays.length} libres`;
+
     bays.forEach(bay => {
         const button = document.createElement("button");
         button.className = `bay-card ${bay.status}`;
@@ -595,14 +603,17 @@ document.getElementById("confirmReservation").onclick = async () => {
 };
 async function loadReservation() {
     const reservation = await getMyReservation();
+    const homeSnippet = document.getElementById("homeReservationSnippet");
+
     if (!reservation) {
+        if (homeSnippet) homeSnippet.textContent = "Sin reserva activa";
         document.getElementById("qrContainer").innerHTML = `
             <div class="empty-state">
                 <div style="font-size:30px; margin-bottom:10px">▣</div>
                 <h3>${t("noReservation")}</h3>
                 <p>${t("noReservationDesc")}</p>
                 <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:15px;">
-                    <button class="primary-button" onclick="showPage('home')" style="width: auto; padding: 10px 20px;">${t("viewMap")}</button>
+                    <button class="primary-button" onclick="showPage('bays')" style="width: auto; padding: 10px 20px;">Reservar bahía</button>
                     <button class="link-button" onclick="openCheckinScanner('book')" style="margin: 0; padding: 10px; border: 1px solid var(--border); border-radius: 8px;">${t("scanAtStation")}</button>
                 </div>
             </div>
@@ -610,6 +621,7 @@ async function loadReservation() {
         document.getElementById("qrBadge").classList.add("hidden");
         return;
     }
+    if (homeSnippet) homeSnippet.textContent = `${reservation.bay} • ${reservation.code}`;
     document.getElementById("qrBadge").classList.remove("hidden");
     renderReservation(reservation, reservation.qr);
 }
