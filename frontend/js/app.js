@@ -118,23 +118,20 @@ async function loadLiveWeather() {
         let advice = "";
 
         if (temp >= 20 && temp <= 27) {
-            // Rango óptimo electroquímico para baterías de iones de litio
             minMinutes = 40;
-            maxMinutes = 55;
-            advice = `El clima está a <strong>${temp}°C (${conditionText})</strong>. ¡Temperatura perfecta para la química de tu batería! Tu patineta se demorará de <strong>${minMinutes} a ${maxMinutes} minutos</strong> en una carga promedio rápida (20% al 80%).`;
-            if (badgeEl) badgeEl.innerHTML = `<span>⚡ Eficiencia Óptima</span>`;
+            maxMinutes = 50;
+            advice = `Hoy la temperatura en el campus está en <strong>${temp}°C</strong> con cielo <strong>${conditionText.toLowerCase()}</strong>. Con estas condiciones templadas, tu patineta o bici tardará aproximadamente de <strong>${minMinutes} a ${maxMinutes} minutos</strong> para llegar al 80%.`;
+            if (badgeEl) badgeEl.innerHTML = `<span>Clima favorable</span>`;
         } else if (temp > 27) {
-            // Temperatura más cálida, la BMS reduce ligeramente la tasa por seguridad térmica
-            minMinutes = 50;
-            maxMinutes = 70;
-            advice = `Temperatura ambiental cálida (<strong>${temp}°C</strong>). El sistema de gestión térmica de la bahía regula la corriente para cuidar tu batería: tu patineta se demorará de <strong>${minMinutes} a ${maxMinutes} minutos</strong>.`;
-            if (badgeEl) badgeEl.innerHTML = `<span>🌡️ Protección Térmica</span>`;
+            minMinutes = 45;
+            maxMinutes = 60;
+            advice = `Hace calor en la estación (<strong>${temp}°C</strong>). El cargador cuida la temperatura de tu batería para no recalentarla, así que el tiempo estimado será de <strong>${minMinutes} a ${maxMinutes} minutos</strong>.`;
+            if (badgeEl) badgeEl.innerHTML = `<span>Día caluroso</span>`;
         } else {
-            // Días fríos o lluvia
-            minMinutes = 55;
-            maxMinutes = 75;
-            advice = `Temperatura fresca o lluvia (<strong>${temp}°C</strong>). En frío la absorción de carga es más gradual para evitar estrés químico: tu patineta se demorará de <strong>${minMinutes} a ${maxMinutes} minutos</strong>.`;
-            if (badgeEl) badgeEl.innerHTML = `<span>❄️ Carga Segura</span>`;
+            minMinutes = 50;
+            maxMinutes = 65;
+            advice = `Tenemos un ambiente fresco (<strong>${temp}°C</strong>) con <strong>${conditionText.toLowerCase()}</strong>. La recarga se realiza de forma suave para proteger las celdas, tomando de <strong>${minMinutes} a ${maxMinutes} minutos</strong>.`;
+            if (badgeEl) badgeEl.innerHTML = `<span>Ambiente fresco</span>`;
         }
 
         estimateEl.innerHTML = advice;

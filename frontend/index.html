@@ -218,10 +218,10 @@
             </div>
             <nav class="desktop-header-nav" aria-label="Navegación de escritorio">
                 <button class="desktop-nav-link active" data-page="home" onclick="showPage('home')">Inicio</button>
-                <button class="desktop-nav-link" data-page="bays" onclick="showPage('bays')">⚡ Bahías</button>
-                <button class="desktop-nav-link" data-page="qr" onclick="showPage('qr')">Mi QR</button>
+                <button class="desktop-nav-link" data-page="bays" onclick="showPage('bays')">Bahías</button>
+                <button class="desktop-nav-link" data-page="qr" onclick="showPage('qr')">Mi Reserva</button>
                 <button class="desktop-nav-link" data-page="location" onclick="showPage('location')">Ubicación</button>
-                <button class="desktop-nav-link" data-page="ai" onclick="showPage('ai')">Asistente</button>
+                <button class="desktop-nav-link" data-page="ai" onclick="showPage('ai')">Ayuda</button>
             </nav>
             <div class="top-actions">
                 <div id="liveClock" class="live-clock" title="Fecha y hora actual">
@@ -240,37 +240,32 @@
 
             
             <!-- =========================================================
-                 SECCIÓN INICIO (HOME 10/10 - ACOGEDOR, ELEGANTE Y COMPLETO)
+                 SECCIÓN INICIO (DISEÑO LIMPIO, HUMANO Y PROFESIONAL)
                  ========================================================= -->
             <section id="homeSection" class="page-section">
 
-                <!-- Hero Banner de Bienvenida Premium -->
+                <!-- Hero Banner de Bienvenida -->
                 <div class="welcome-hero-banner">
                     <div class="welcome-hero-content">
-                        <span class="welcome-pill">🌱 Movilidad Sostenible & Energía Solar</span>
-                        <h1 class="welcome-title"><span id="greetingText" data-i18n="greeting">Hola</span> <span class="welcome-wave">👋</span></h1>
-                        <p class="welcome-desc">Bienvenido a la red de carga solar inteligente de ELECTRA. Conecta tu vehículo eléctrico con energía 100% limpia mientras estudias o trabajas en el campus.</p>
+                        <span class="welcome-pill">Estación de Carga • Campus UdeM</span>
+                        <h1 class="welcome-title"><span id="greetingText" data-i18n="greeting">Hola</span></h1>
+                        <p class="welcome-desc">Carga tu patineta o bicicleta eléctrica en los puertos de la universidad con energía solar. Consulta la disponibilidad en tiempo real o reserva tu turno antes de llegar.</p>
                         <div class="welcome-actions">
                             <button class="welcome-primary-btn" onclick="showPage('bays')">
-                                <span class="btn-icon">⚡</span>
-                                <span>Ver y Reservar Bahías</span>
+                                <span>Ver bahías disponibles</span>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                             </button>
                             <button class="welcome-secondary-btn" onclick="showPage('location')">
-                                <span class="btn-icon">📍</span>
-                                <span>Cómo llegar a la estación</span>
+                                <span>Ver mapa de llegada</span>
                             </button>
                         </div>
                     </div>
                     <div class="welcome-hero-image-wrap">
                         <img src="/img/home-hero.jpg" alt="Estación ELECTRA" class="welcome-hero-img">
-                        <div class="hero-image-overlay-badge">
-                            <span class="badge-dot"></span>
-                            <span>Estación Activa UdeM</span>
-                        </div>
                     </div>
                 </div>
 
-                <!-- Clima en Vivo y Estimador Inteligente de Carga -->
+                <!-- Información del Clima y Tiempo de Carga -->
                 <div class="weather-smart-card" id="weatherSmartCard">
                     <div class="weather-header-row">
                         <div class="weather-location-info">
@@ -278,21 +273,20 @@
                             <div>
                                 <div class="weather-temp-line">
                                     <strong id="weatherTemp">--°C</strong>
-                                    <span class="weather-condition" id="weatherCondition">Cargando clima...</span>
+                                    <span class="weather-condition" id="weatherCondition">Consultando estación...</span>
                                 </div>
-                                <small class="weather-city" id="weatherCity">📍 Medellín, Campus UdeM</small>
+                                <span class="weather-city" id="weatherCity">Campus Universidad de Medellín</span>
                             </div>
                         </div>
                         <div class="weather-badge-pill" id="weatherEfficiencyBadge">
-                            <span>⚡ Eficiencia Óptima</span>
+                            <span>Condición habitual</span>
                         </div>
                     </div>
 
                     <div class="weather-charge-estimate" id="weatherChargeEstimate">
-                        <div class="estimate-icon">🛴</div>
                         <div class="estimate-body">
-                            <strong>Tiempo estimado de carga de tu patineta:</strong>
-                            <p id="weatherEstimateText">Analizando temperatura ambiente y radiación solar...</p>
+                            <span class="estimate-title">Tiempo estimado para recarga</span>
+                            <p id="weatherEstimateText">Calculando tiempo según la temperatura ambiente de hoy...</p>
                         </div>
                     </div>
 
@@ -306,8 +300,8 @@
                             <strong id="weatherWind">-- km/h</strong>
                         </div>
                         <div class="weather-stat-chip">
-                            <span>Radiación Solar</span>
-                            <strong id="weatherSolar">Alta ☀️</strong>
+                            <span>Generación solar</span>
+                            <strong id="weatherSolar">Activa</strong>
                         </div>
                     </div>
                 </div>
