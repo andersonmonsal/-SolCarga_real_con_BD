@@ -540,7 +540,11 @@ function openReservation(bay) {
     document.getElementById("selectedBay").innerHTML = `
         <div class="selected-bay">
             <strong>${bayLabel} ${bay.code}</strong>
-            <span>⚡ ${bayLabel} ${universalLabel}</span>
+            <span class="bay-connector-info">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 4px;">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>${bayLabel} ${universalLabel}
+            </span>
         </div>
     `;
     document.querySelectorAll('.vehicle-option').forEach(btn => {

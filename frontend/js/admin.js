@@ -151,16 +151,18 @@ async function loadAdminUsers() {
             return;
         }
         container.innerHTML = data.map(u => `
-            <div style="background:var(--card); padding:15px; border-radius:12px; border:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <strong style="font-size:16px;">${u.name} ${u.last_name || ''}</strong>
-                    <span style="background: ${u.role === 'admin' ? 'var(--red)' : 'var(--green)'}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-left: 8px;">${u.role.toUpperCase()}</span>
-                    <div style="color:var(--muted); font-size:14px; margin-top:4px;">✉️ ${u.email}</div>
-                    <div style="color:var(--muted); font-size:13px; margin-top:2px;">🚗 ${u.vehicle_type} • 🗓️ ${new Date(u.created_at).toLocaleDateString()}</div>
+            <div class="admin-user-card">
+                <div class="admin-user-details">
+                    <div class="admin-user-name-row">
+                        <strong>${u.name} ${u.last_name || ''}</strong>
+                        <span class="admin-user-role-pill ${u.role === 'admin' ? 'role-admin' : 'role-user'}">${u.role.toUpperCase()}</span>
+                    </div>
+                    <div class="admin-user-meta-email">✉️ ${u.email}</div>
+                    <div class="admin-user-meta-sub">🚗 ${u.vehicle_type || 'Vehículo'} • 🗓️ ${new Date(u.created_at).toLocaleDateString()}</div>
                 </div>
                 <button
+                    class="admin-user-delete-btn"
                     onclick="deleteUserFromAdmin(${u.id}, '${u.name} ${u.last_name || ''}')"
-                    style="padding:8px 14px; border-radius:8px; border:1px solid var(--red); background:transparent; color:var(--red); font-size:13px; font-weight:600; cursor:pointer;"
                     title="Eliminar cuenta de ${u.name}"
                 >🗑️ Eliminar</button>
             </div>

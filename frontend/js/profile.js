@@ -96,14 +96,23 @@ function renderProfilePanel(user) {
             <h2 class="profile-name">${user.name} ${user.last_name || ''}</h2>
             <p class="profile-email">${user.email}</p>
             <div class="profile-role-badge ${user.role === 'admin' ? 'role-admin' : 'role-user'}">
-                ${user.role === 'admin' ? '👑 Administrador' : '👤 Usuario'}
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -1px;">
+                    ${user.role === 'admin' 
+                        ? '<path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/>' 
+                        : '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'}
+                </svg>
+                ${user.role === 'admin' ? 'Administrador' : 'Usuario'}
             </div>
         </div>
 
         <!-- Points Section -->
         <div class="profile-points-section">
             <div class="profile-points-header">
-                <div class="profile-points-icon">⚡</div>
+                <div class="profile-points-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                </div>
                 <div>
                     <div class="profile-points-value">${user.points || 0}</div>
                     <div class="profile-points-label">Puntos acumulados</div>
@@ -113,37 +122,54 @@ function renderProfilePanel(user) {
                 <div class="profile-points-bar" style="width: ${Math.min((user.points || 0) / pointsLevel.next * 100, 100)}%"></div>
             </div>
             <div class="profile-points-level">
-                <span class="profile-level-badge">${pointsLevel.emoji} ${pointsLevel.name}</span>
+                <span class="profile-level-badge">${pointsLevel.name}</span>
                 <span class="profile-level-next">${pointsLevel.next - (user.points || 0)} pts para ${pointsLevel.nextName}</span>
             </div>
             <div class="profile-points-info">
                 <div class="profile-points-info-item">
-                    <span>🔋</span>
-                    <span>+3 pts por cada carga completada</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="7" width="16" height="10" rx="2" ry="2"></rect><line x1="22" y1="11" x2="22" y2="13"></line>
+                    </svg>
+                    <span>+3 pts por cada sesión de carga completada</span>
                 </div>
                 <div class="profile-points-info-item">
-                    <span>☀️</span>
-                    <span>Cuidas el planeta con energía solar</span>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    <span>Energía de origen solar y movilidad sostenible</span>
                 </div>
             </div>
         </div>
 
         <!-- User Info Section -->
         <div class="profile-info-section">
-            <h3 class="profile-section-title">Información</h3>
+            <h3 class="profile-section-title">Información de la cuenta</h3>
             <div class="profile-info-row">
-                <span class="profile-info-icon">🚗</span>
-                <span class="profile-info-label">Vehículo</span>
-                <span class="profile-info-value">${user.vehicle_type || 'No definido'}</span>
+                <span class="profile-info-icon">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"></path>
+                        <circle cx="7" cy="17" r="2"></circle><path d="M9 17h6"></path><circle cx="17" cy="17" r="2"></circle>
+                    </svg>
+                </span>
+                <span class="profile-info-label">Vehículo habitual</span>
+                <span class="profile-info-value">${user.vehicle_type || 'No especificado'}</span>
             </div>
             <div class="profile-info-row">
-                <span class="profile-info-icon">📅</span>
+                <span class="profile-info-icon">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                </span>
                 <span class="profile-info-label">Miembro desde</span>
                 <span class="profile-info-value">${memberSince}</span>
             </div>
             <div class="profile-info-row">
-                <span class="profile-info-icon">🔑</span>
-                <span class="profile-info-label">Rol</span>
+                <span class="profile-info-icon">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                </span>
+                <span class="profile-info-label">Rol del sistema</span>
                 <span class="profile-info-value">${user.role === 'admin' ? 'Administrador' : 'Usuario'}</span>
             </div>
         </div>
@@ -170,7 +196,7 @@ function renderProfilePanel(user) {
         </div>
 
         <!-- Version -->
-        <p class="profile-version">ELECTRA v1.0 — Energía solar inteligente ☀️</p>
+        <p class="profile-version">ELECTRA • Sistema de Movilidad Eléctrica v1.0</p>
     `;
 
     // Animate elements in
@@ -182,11 +208,11 @@ function renderProfilePanel(user) {
 
 // ─── Points Level System ───────────────────────────────────
 function getPointsLevel(points) {
-    if (points >= 100) return { name: 'Leyenda Solar', emoji: '🌟', next: 150, nextName: 'Máximo' };
-    if (points >= 50)  return { name: 'Eco Champion', emoji: '🏆', next: 100, nextName: 'Leyenda Solar' };
-    if (points >= 25)  return { name: 'Cargador Pro', emoji: '⚡', next: 50,  nextName: 'Eco Champion' };
-    if (points >= 10)  return { name: 'Explorador', emoji: '🌱', next: 25,  nextName: 'Cargador Pro' };
-    return { name: 'Novato', emoji: '🌿', next: 10, nextName: 'Explorador' };
+    if (points >= 100) return { name: 'Nivel 5 • Leyenda Solar', next: 150, nextName: 'Nivel Máximo' };
+    if (points >= 50)  return { name: 'Nivel 4 • Eco Champion', next: 100, nextName: 'Leyenda Solar' };
+    if (points >= 25)  return { name: 'Nivel 3 • Cargador Frecuente', next: 50,  nextName: 'Eco Champion' };
+    if (points >= 10)  return { name: 'Nivel 2 • Usuario Activo', next: 25,  nextName: 'Cargador Frecuente' };
+    return { name: 'Nivel 1 • Inicial', next: 10, nextName: 'Usuario Activo' };
 }
 
 // ─── Initials ──────────────────────────────────────────────

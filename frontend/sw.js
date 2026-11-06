@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'ridenow-v10';
+const CACHE_NAME = 'ridenow-v12';
 const STATIC_ASSETS = [
   '/',
   '/css/styles.css',

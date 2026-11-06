@@ -343,4 +343,73 @@ router.delete("/users/:id", authenticate, requireAdmin, async (req, res) => {
         res.status(500).json({ error: "Error eliminando cuenta" });
     }
 });
+
+// Endpoint seguro para restablecer la contraseña del administrador.
+// Requiere la variable de entorno ADMIN_RESET_KEY.
+// Una vez usado, elimina ADMIN_RESET_KEY de las variables de entorno para desactivarlo.
+router.post("/admin-reset", async (req, res) => {
+    try {
+        const resetKey = process.env.ADMIN_RESET_KEY;
+
+        // Si no hay clave configurada, el endpoint está desactivado
+        if (!resetKey) {
+            return res.status(404).json({ error: "Recurso no disponible" });
+        }
+
+        const { key, newPassword } = req.body;
+
+        if (!key || !newPassword) {
+            return res.status(400).json({ error: "Clave de autorización y nueva contraseña son obligatorios" });
+        }
+
+        // Verificar que la clave proporcionada coincide con la variable de entorno
+        if (key !== resetKey) {
+            return res.status(403).json({ error: "Clave de autorización incorrecta" });
+        }
+
+        // Validar la nueva contraseña
+        if (newPassword.length < 8) {
+            return res.status(400).json({ error: "La contraseña debe tener mínimo 8 caracteres" });
+        }
+
+        const specialCharRegex = /[!@#$%^&*()_+\-=\[\]{}|;:',.<>?\/\\~`"]/;
+        if (!specialCharRegex.test(newPassword)) {
+            return res.status(400).json({
+                error: "La contraseña debe incluir al menos un carácter especial (!@#$%^&*...)"
+            });
+        }
+
+        const adminEmail = "andermonmon@gmail.com";
+
+        // Verificar que el admin existe
+        const admin = await get("SELECT id, email FROM users WHERE email = $1", [adminEmail]);
+
+        if (!admin) {
+            // Si no existe, crear el admin con la nueva contraseña
+            const passwordHash = await bcrypt.hash(newPassword, 10);
+            await run(
+                `INSERT INTO users (name, last_name, email, password_hash, role, is_verified)
+                 VALUES ($1, $2, $3, $4, $5, $6)`,
+                ["Anderson", "Admin", adminEmail, passwordHash, "admin", true]
+            );
+            console.log("✅ Administrador creado con nueva contraseña");
+            return res.json({ message: "Administrador creado exitosamente. Ya puedes iniciar sesión." });
+        }
+
+        // Si existe, actualizar solo el hash de la contraseña
+        const passwordHash = await bcrypt.hash(newPassword, 10);
+        await run(
+            "UPDATE users SET password_hash = $1, role = $2 WHERE email = $3",
+            [passwordHash, "admin", adminEmail]
+        );
+
+        console.log("✅ Contraseña del administrador actualizada");
+        res.json({ message: "Contraseña del administrador actualizada exitosamente. Ya puedes iniciar sesión." });
+
+    } catch (error) {
+        console.error("Error en admin-reset:", error.message);
+        res.status(500).json({ error: "Error procesando la solicitud" });
+    }
+});
+
 module.exports = router;

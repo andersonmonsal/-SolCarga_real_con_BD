@@ -22,7 +22,7 @@
     <meta name="description" content="ELECTRA — Estación inteligente de carga para patinetas y bicicletas eléctricas">
 
     
-    <link rel="stylesheet" href="/css/styles.css?v=3">
+    <link rel="stylesheet" href="/css/styles.css?v=5">
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
@@ -261,7 +261,7 @@
                         </div>
                     </div>
                     <div class="welcome-hero-image-wrap">
-                        <img src="/img/home-hero.jpg" alt="Estación ELECTRA" class="welcome-hero-img">
+                        <img src="img/home-hero.jpg" alt="Estación ELECTRA" class="welcome-hero-img">
                     </div>
                 </div>
 
@@ -382,23 +382,9 @@
             </section>
 
             
-            <section id="qrSection" class="page-section hidden" style="
-                position: fixed;
-                top: 56px;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                z-index: 50;
-                background: url('/img/qr-bg.jpg') center/cover no-repeat;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                padding: 20px;
-                padding-bottom: 80px;
-            ">
-                <div style="width: 100%; max-width: 420px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); padding: 30px; box-shadow: var(--shadow-lg); border-radius: 16px; text-align: center;">
-                    <h2 data-i18n="myQR" style="margin-top: 0; font-size: 20px; font-weight: 800; margin-bottom: 20px;">Mi QR</h2>
+            <section id="qrSection" class="page-section qr-overlay-section hidden">
+                <div class="qr-modal-wrapper">
+                    <h2 data-i18n="myQR">Mi QR</h2>
                     <div id="qrContainer">
                         
                     </div>
@@ -406,46 +392,33 @@
             </section>
 
             
-            <section id="locationSection" class="page-section hidden" style="
-                position: fixed;
-                top: 56px;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                z-index: 50;
-                background: url('/img/location-bg.jpg') center/cover no-repeat;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                padding: 20px;
-                padding-bottom: 80px;
-            ">
-                <div class="location-card" style="width: 100%; max-width: 480px; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(12px); padding: 30px; box-shadow: var(--shadow-lg); border-radius: 16px;">
-                    <h2 data-i18n="location" style="margin-top: 0; font-size: 20px; font-weight: 800; margin-bottom: 20px;">Ubicación</h2>
+            <section id="locationSection" class="page-section location-overlay-section hidden">
+                <div class="location-card">
+                    <h2 data-i18n="location">Ubicación</h2>
                     
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
-                        <span style="background: var(--accent-light); color: var(--accent); padding: 6px; border-radius: 8px;">🗺️</span>
-                        <strong style="font-size: 14px; color: var(--text);">Mapa en la app</strong>
+                    <div class="location-feature-row">
+                        <span class="location-badge-icon">🗺️</span>
+                        <strong>Mapa en la app</strong>
                     </div>
 
-                    <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 16px;">
-                        <span style="background: var(--accent-light); color: var(--accent); padding: 6px; border-radius: 8px;">📍</span>
-                        <div>
-                            <strong id="stationName" style="font-size: 14px; color: var(--text);">ELECTRA Campus Central</strong>
-                            <p id="stationAddress" style="font-size: 12px; color: var(--muted); margin: 2px 0;">Universidad de Medellín, Cra. 87 # 30-65</p>
-                            <p id="stationHours" style="font-size: 11px; color: var(--muted); margin: 0;">Lunes a Viernes: 6:00 AM - 10:00 PM | Sábados: 8:00 AM - 6:00 PM</p>
+                    <div class="location-feature-row">
+                        <span class="location-badge-icon">📍</span>
+                        <div class="location-text-wrap">
+                            <strong id="stationName">ELECTRA Campus Central</strong>
+                            <p id="stationAddress">Universidad de Medellín, Cra. 87 # 30-65</p>
+                            <p id="stationHours">Lunes a Viernes: 6:00 AM - 10:00 PM | Sábados: 8:00 AM - 6:00 PM</p>
                         </div>
                     </div>
 
                     
-                    <div id="gpsDistanceInfo" style="margin-top: 8px; min-height: 22px;"></div>
+                    <div id="gpsDistanceInfo" class="location-gps-info"></div>
                     
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-                        <span style="color: var(--green); font-size: 16px;">🚶‍♂️</span>
-                        <strong data-i18n="walkingTime" style="font-size: 13px; color: var(--green);">3 minutos caminando</strong>
+                    <div class="location-walking-row">
+                        <span class="walking-icon">🚶‍♂️</span>
+                        <strong data-i18n="walkingTime">3 minutos caminando</strong>
                     </div>
                     
-                    <div style="border-radius: 12px; overflow: hidden; border: 1px solid var(--border); position: relative;">
+                    <div class="location-map-wrap">
                         <iframe 
                             src="https://maps.google.com/maps?q=6.231435,-75.612030&hl=es&z=17&output=embed" 
                             width="100%" 

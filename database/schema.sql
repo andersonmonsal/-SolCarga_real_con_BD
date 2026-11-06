@@ -117,8 +117,10 @@ INSERT INTO station (id, name, address, opening_hours, latitude, longitude, desc
 ON CONFLICT (id) DO NOTHING;
 
 
-INSERT INTO users (name, last_name, email, password_hash, role) VALUES
-    ('Anderson', 'Admin', 'andermonmon@gmail.com', '$2b$10$t8aeWfHyC5c2jqC7H2fO3e2w6kBfppzdlNLCKZjmY88avUZo6ytu6', 'admin')
+-- Insertar admin solo si no existe. Si ya existe, solo asegurar que tenga rol admin.
+-- NO se sobreescribe el password_hash para no invalidar contraseñas actualizadas.
+INSERT INTO users (name, last_name, email, password_hash, role, is_verified) VALUES
+    ('Anderson', 'Admin', 'andermonmon@gmail.com', '$2b$10$t8aeWfHyC5c2jqC7H2fO3e2w6kBfppzdlNLCKZjmY88avUZo6ytu6', 'admin', true)
 ON CONFLICT (email) DO UPDATE SET role = 'admin';
 
 
