@@ -730,9 +730,7 @@ window.sendChip = async function(message) {
 };
 socket.on("bayUpdated", async () => {
     await loadBays();
-    if (currentScreen === "qr") {
-        await loadReservation();
-    }
+    await loadReservation();
 });
 function toggleTheme() {
     const body = document.body;

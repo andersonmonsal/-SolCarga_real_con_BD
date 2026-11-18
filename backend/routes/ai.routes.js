@@ -1,6 +1,6 @@
 const express = require("express");
 const OpenAI = require("openai");
-const { all, get } = require("../database");
+const { all, get, run } = require("../database");
 const { authenticate } = require("../middleware/auth.middleware");
 
 const router = express.Router();
@@ -38,7 +38,7 @@ router.post("/chat", authenticate, async (req, res) => {
         let activeReservation = null;
         try {
             activeReservation = await get(
-                `SELECT r.reservation_code, r.arrival_time, r.duration, r.status, b.code AS bay
+                `SELECT r.id, r.bay_id, r.reservation_code, r.arrival_time, r.duration, r.status, b.code AS bay
                  FROM reservations r JOIN bays b ON b.id = r.bay_id
                  WHERE r.user_id = $1 AND r.status IN ('active','checked_in')
                  ORDER BY r.created_at DESC LIMIT 1`,
@@ -46,12 +46,6 @@ router.post("/chat", authenticate, async (req, res) => {
             );
         } catch (_) {}
 
-        let carSpots = [];
-        try {
-            carSpots = await all(`SELECT code, zone, status FROM car_spots ORDER BY zone, code`);
-        } catch (_) {}
-
-        const freeCarSpots = carSpots.filter(s => s.status === "free");
         const userName = req.user ? req.user.name : (isEnglish ? "User" : "Usuario");
 
         // Evaluamos si coincide con alguna de las preguntas frecuentes / intenciones conocidas
@@ -65,25 +59,18 @@ router.post("/chat", authenticate, async (req, res) => {
             msgLower.includes("free bays")
         ) {
             if (isEnglish) {
-                const zoneList = [...new Set(freeCarSpots.map(s => s.zone))].join(', ');
-                fallbackAnswer = `Hello ${userName}! 👋 Here is the real-time summary:\n\n` +
-                    `**⚡ Charging Bays** (scooters/bicycles):\n` +
-                    `• ${available.length} available out of ${bays.length} total\n` +
-                    `${available.length > 0 ? '✅ You can book directly from the home screen.' : '⏳ Currently all are busy, please check back shortly.'}\n\n` +
-                    `**🚗 Car Parking Spots:**\n` +
-                    `• ${freeCarSpots.length} free out of ${carSpots.length} total\n` +
-                    `${freeCarSpots.length > 0 ? `Available zones: ${zoneList}` : '🔴 All spots are occupied right now.'}`;
+                fallbackAnswer = `Hello ${userName}! 👋 Here is the real-time availability:\n\n` +
+                    `**⚡ Solar Charging Bays** (scooters and electric bikes):\n` +
+                    `• **${available.length} available** out of ${bays.length} total\n` +
+                    `${available.length > 0 ? '✅ You can book your bay directly from the Home or Bays screen.' : '⏳ All bays are currently in use, please check back in a few minutes.'}`;
             } else {
-                fallbackAnswer = `¡Hola ${userName}! 👋 Aquí el resumen en tiempo real:\n\n` +
-                    `**⚡ Bahías de carga** (patinetas/bicicletas):\n` +
-                    `• ${available.length} disponibles de ${bays.length} totales\n` +
-                    `${available.length > 0 ? '✅ Puedes reservar desde la pantalla de inicio.' : '⏳ Por favor, intenta más tarde.'}\n\n` +
-                    `**🚗 Parqueaderos de carros:**\n` +
-                    `• ${freeCarSpots.length} libres de ${carSpots.length} totales\n` +
-                    `${freeCarSpots.length > 0 ? `Zonas disponibles: ${[...new Set(freeCarSpots.map(s => s.zone))].join(', ')}` : '🔴 Todos ocupados actualmente.'}`;
+                fallbackAnswer = `¡Hola ${userName}! 👋 Aquí tienes la disponibilidad en tiempo real:\n\n` +
+                    `**⚡ Bahías de recarga solar** (patinetas y bicicletas eléctricas):\n` +
+                    `• **${available.length} disponibles** de ${bays.length} totales\n` +
+                    `${available.length > 0 ? '✅ Puedes reservar tu bahía directamente desde la pantalla de Inicio o Bahías.' : '⏳ Todas las bahías están ocupadas en este momento, por favor intenta en unos minutos.'}`;
             }
         }
-        // 2. Parqueaderos de carros
+        // 2. Consulta sobre carros / parqueaderos ajenos
         else if (
             msgLower.includes("parqueadero") ||
             msgLower.includes("carro") ||
@@ -91,19 +78,10 @@ router.post("/chat", authenticate, async (req, res) => {
             msgLower.includes("parking") ||
             msgLower.includes("car spot")
         ) {
-            const zones = {};
-            carSpots.forEach(s => {
-                if (!zones[s.zone]) zones[s.zone] = { free: 0, total: 0 };
-                zones[s.zone].total++;
-                if (s.status === 'free') zones[s.zone].free++;
-            });
-
             if (isEnglish) {
-                const zoneLines = Object.entries(zones).map(([z, d]) => `  • Zone ${z}: ${d.free}/${d.total} free`).join('\n');
-                fallbackAnswer = `🚗 **Car Parking Status:**\n\n${zoneLines || 'No parking data available right now.'}\n\n📡 Parking spots use automated IoT sensors that detect cars on entry/exit. No QR code or reservation needed — just drive in!\n\nCheck the **🚗 Parking** tab to view them live.`;
+                fallbackAnswer = `🛴 **ELECTRA Smart Charging Station:**\n\nOur solar station is exclusively designed for **micromobility** (electric scooters and bikes) at Universidad de Medellín.\n\nWe provide 8 solar charging bays with universal 110V/220V outlets. You can view real-time availability and reserve directly from the **Bays** tab! ⚡`;
             } else {
-                const zoneLines = Object.entries(zones).map(([z, d]) => `  • ${z}: ${d.free}/${d.total} libres`).join('\n');
-                fallbackAnswer = `🚗 **Estado de parqueaderos de carros:**\n\n${zoneLines || 'Sin datos disponibles'}\n\n📡 Los parqueaderos usan sensores IoT que detectan automáticamente cuando un carro entra o sale. ¡Sin QR, sin reserva — solo llega!\n\nVe a la pestaña **🚗 Parqueadero** para verlos en tiempo real.`;
+                fallbackAnswer = `🛴 **Estación Solar ELECTRA:**\n\nNuestra estación está dedicada exclusivamente a la **micromovilidad eléctrica** (patinetas y bicicletas eléctricas) en el Campus UdeM.\n\nContamos con 8 bahías de recarga solar fotovoltaica con tomas 110V/220V. ¡Puedes consultar la disponibilidad y apartar tu turno en la sección de **Bahías**! ⚡`;
             }
         }
         // 3. Recomendación de bahía
@@ -134,21 +112,17 @@ router.post("/chat", authenticate, async (req, res) => {
             msgLower.includes("how do i use")
         ) {
             if (isEnglish) {
-                fallbackAnswer = `🚀 **How does RideNow work?**\n\n` +
-                    `**For electric scooters & bikes:**\n` +
-                    `1️⃣ Reserve an available bay from the Home screen\n` +
-                    `2️⃣ Head to the station and scan the physical QR code to check in\n` +
-                    `3️⃣ Plug in your vehicle and recharge!\n\n` +
-                    `**For cars:**\n` +
-                    `🚗 No reservation needed! Just check the parking section for open spots and park. Our IoT sensors automatically detect your vehicle.`;
+                fallbackAnswer = `🚀 **How to use ELECTRA?**\n\n` +
+                    `1️⃣ Select an available bay from the **Home** or **Bays** screen\n` +
+                    `2️⃣ Choose your vehicle (Scooter or Bike) and set your arrival/departure time\n` +
+                    `3️⃣ Confirm your booking to obtain your personal QR code\n` +
+                    `4️⃣ Arrive at the station, scan your QR code at the bay, and start charging with 100% clean solar energy! ⚡`;
             } else {
-                fallbackAnswer = `🚀 **¿Cómo usar RideNow?**\n\n` +
-                    `**Para patinetas y bicicletas eléctricas:**\n` +
-                    `1️⃣ Reserva una bahía desde la pantalla de inicio\n` +
-                    `2️⃣ Ve a la estación y escanea el QR físico para confirmar tu llegada\n` +
-                    `3️⃣ ¡Conecta tu vehículo y listo!\n\n` +
-                    `**Para carros:**\n` +
-                    `🚗 ¡Sin reserva ni QR! Solo mira la app para saber qué parqueadero está libre y ve directamente. Los sensores detectan tu carro automáticamente.`;
+                fallbackAnswer = `🚀 **¿Cómo usar ELECTRA?**\n\n` +
+                    `1️⃣ Elige una bahía disponible desde la pantalla de **Inicio** o **Bahías**\n` +
+                    `2️⃣ Selecciona tu vehículo (Patineta o Bicicleta) y define tu hora de llegada y salida\n` +
+                    `3️⃣ Confirma tu reserva para obtener tu código QR personal\n` +
+                    `4️⃣ Llega a la estación en el Campus UdeM, escanea tu QR en el punto y ¡empieza a cargar con energía 100% solar! ⚡`;
             }
         }
         // 5. Tiempo de carga
@@ -171,23 +145,69 @@ router.post("/chat", authenticate, async (req, res) => {
                 fallbackAnswer = `⏱️ **Tiempos de carga:**\n\n• Puedes reservar por bloques de **1 hora** hasta máximo **4 horas** continuas\n• Esto asegura rotación justa para todos${resText}`;
             }
         }
-        // 6. Cancelar reserva
+        // 6. Cancelar reserva (La IA cancela directamente si el usuario lo solicita)
         else if (
             msgLower.includes("cancelo mi reserva") ||
+            msgLower.includes("cancelar mi reserva") ||
+            msgLower.includes("cancela mi reserva") ||
+            msgLower.includes("cancela") ||
             msgLower.includes("cancelar") ||
-            msgLower.includes("cancel my reservation") ||
-            msgLower.includes("cancel reservation")
+            msgLower.includes("cancel") ||
+            msgLower.includes("anular reserva") ||
+            msgLower.includes("liberar bahia") ||
+            msgLower.includes("liberar bahía") ||
+            msgLower.includes("desocupar bahia") ||
+            msgLower.includes("desocupar bahía") ||
+            msgLower.includes("quitar mi reserva") ||
+            msgLower.includes("eliminar mi reserva")
         ) {
-            if (isEnglish) {
-                const activeText = activeReservation
-                    ? `\n🔴 You currently have an active reservation at bay **${activeReservation.bay}**.`
-                    : '';
-                fallbackAnswer = `❌ **How to cancel your reservation:**\n\nGo to the **"My QR" (▣)** tab and tap the red **"Cancel reservation"** button.\n\nThe bay will be freed immediately with no fee or penalty. 😊${activeText}`;
+            if (activeReservation) {
+                try {
+                    await run(
+                        `UPDATE reservations
+                         SET status = 'cancelled'
+                         WHERE id = $1`,
+                        [activeReservation.id]
+                    );
+                    await run(
+                        `UPDATE bays
+                         SET status = 'available',
+                             updated_at = CURRENT_TIMESTAMP
+                         WHERE id = $1`,
+                        [activeReservation.bay_id]
+                    );
+                    const io = req.app.get("io");
+                    if (io) {
+                        io.emit("bayUpdated", {
+                            bayId: activeReservation.bay_id,
+                            status: "available"
+                        });
+                    }
+                } catch (cancelErr) {
+                    console.error("Error al cancelar reserva desde IA:", cancelErr);
+                }
+
+                if (isEnglish) {
+                    fallbackAnswer = `✅ **I have cancelled your reservation!**\n\n` +
+                        `• **Released Bay:** ${activeReservation.bay}\n` +
+                        `• **Booking Code:** ${activeReservation.reservation_code}\n\n` +
+                        `The bay has been immediately released in the system for other campus users with no fee or penalty. Thank you for notifying us! 😊⚡`;
+                } else {
+                    fallbackAnswer = `✅ **¡He cancelado tu reserva exitosamente!**\n\n` +
+                        `• **Bahía liberada:** ${activeReservation.bay}\n` +
+                        `• **Código cancelado:** ${activeReservation.reservation_code}\n\n` +
+                        `La bahía ha quedado libre inmediatamente en el sistema para que otro usuario del campus pueda utilizarla. No se te ha cobrado nada. ¡Muchas gracias por avisar y mantener el campus en movimiento! 😊⚡`;
+                }
+
+                activeReservation = null;
             } else {
-                const activeText = activeReservation
-                    ? `\n🔴 Tienes una reserva activa en la bahía **${activeReservation.bay}**.`
-                    : '';
-                fallbackAnswer = `❌ **Cómo cancelar tu reserva:**\n\nVe a la pestaña **"Mi QR" (▣)** y presiona el botón rojo **"Cancelar reserva"**.\n\nLa bahía quedará libre inmediatamente y sin ningún costo. 😊${activeText}`;
+                if (isEnglish) {
+                    fallbackAnswer = `ℹ️ **You don't have any active reservation** to cancel at this moment.\n\n` +
+                        `If you want to book a charging slot for your electric scooter or bike, you can choose any available bay from the **Home** or **Bays** tab! ⚡`;
+                } else {
+                    fallbackAnswer = `ℹ️ **No tienes ninguna reserva activa** en este momento para cancelar.\n\n` +
+                        `Si deseas apartar un turno para cargar tu patineta o bicicleta, puedes seleccionar una bahía disponible desde la pantalla de **Inicio** o la pestaña de **Bahías**. ⚡`;
+                }
             }
         }
         // 7. Energía solar
@@ -198,9 +218,9 @@ router.post("/chat", authenticate, async (req, res) => {
             msgLower.includes("solar power")
         ) {
             if (isEnglish) {
-                fallbackAnswer = `☀️ **RideNow is 100% eco-friendly!**\n\nWe generate an average of **100 Wh** with solar panels installed on the canopy. That equates to:\n• 🛴 Charging ~10 scooters simultaneously\n• 🌱 Saving ~2 kg of CO₂ per day\n\nYour charge is completely clean and green! 🌿`;
+                fallbackAnswer = `☀️ **ELECTRA is 100% eco-friendly!**\n\nWe generate solar power with panels installed on the canopy. That equates to:\n• 🛴 Charging up to 8 micromobility vehicles simultaneously\n• 🌱 Saving ~2.5 kg of CO₂ per day\n\nYour charge is completely clean and green! 🌿`;
             } else {
-                fallbackAnswer = `☀️ **RideNow es 100% ecológica!**\n\nGeneramos un promedio de **100 Wh** con paneles solares en el techo. Eso equivale a:\n• 🛴 Cargar ~10 patinetas simultáneamente\n• 🌱 Ahorro de ~2 kg de CO₂ por día\n\n¡Tu carga es completamente verde! 🌿`;
+                fallbackAnswer = `☀️ **¡ELECTRA es 100% ecológica!**\n\nGeneramos energía solar limpia con paneles fotovoltaicos en la estación. Eso equivale a:\n• 🛴 Cargar hasta 8 vehículos de micromovilidad simultáneamente\n• 🌱 Ahorro de ~2.5 kg de CO₂ al día en el campus\n\n¡Tu recarga es completamente limpia y renovable! 🌿`;
             }
         }
         // 8. Conectores
@@ -226,9 +246,9 @@ router.post("/chat", authenticate, async (req, res) => {
             msgLower.includes("fee")
         ) {
             if (isEnglish) {
-                fallbackAnswer = `💚 **The service is completely FREE!**\n\nBoth vehicle charging and car parking spots are free of charge.\n\nIt is part of our campus sustainable green mobility initiative. 🌱`;
+                fallbackAnswer = `💚 **The service is completely FREE!**\n\nCharging your electric scooter or bicycle is 100% free of charge.\n\nIt is part of the clean solar mobility initiative at Universidad de Medellín. 🌱⚡`;
             } else {
-                fallbackAnswer = `💚 **¡El servicio es completamente GRATUITO!**\n\nTanto la carga de vehículos como el uso de parqueaderos no tiene costo.\n\nEs parte de nuestra iniciativa de movilidad sostenible. 🌱`;
+                fallbackAnswer = `💚 **¡El servicio es completamente GRATUITO!**\n\nLa recarga de tu patineta o bicicleta eléctrica no tiene ningún costo.\n\nForma parte de la iniciativa de movilidad solar sostenible de la Universidad de Medellín. 🌱⚡`;
             }
         }
         // 10. Horario
@@ -255,9 +275,9 @@ router.post("/chat", authenticate, async (req, res) => {
             msgLower.includes("where")
         ) {
             if (isEnglish) {
-                fallbackAnswer = `📍 **RideNow Location:**\n\nWe are located at the **North campus area**, right next to the parking building (Block 7), under the solar panel roofs.\n\n🗺️ You can check the interactive map under the **"Location"** tab in the app.`;
+                fallbackAnswer = `📍 **ELECTRA Location:**\n\nWe are located at the **Universidad de Medellín campus** (Cra. 87 # 30-65), under the solar charging station canopy.\n\n🗺️ You can check the interactive arrival map under the **"Location"** tab!`;
             } else {
-                fallbackAnswer = `📍 **Ubicación de RideNow:**\n\nEstamos en la **zona norte del campus**, junto al edificio de parqueaderos (Bloque 7), bajo los paneles solares.\n\n🗺️ Puedes ver el mapa exacto en la pestaña **"Ubicación"** de la app.`;
+                fallbackAnswer = `📍 **Ubicación de ELECTRA:**\n\nEstamos en el **Campus de la Universidad de Medellín** (Cra. 87 # 30-65), en la estación con cubierta solar fotovoltaica.\n\n🗺️ Puedes ver el mapa interactivo y cómo llegar en la pestaña **"Ubicación"**.`;
             }
         }
         // 12. Tiempo total de carga de batería
@@ -327,16 +347,14 @@ router.post("/chat", authenticate, async (req, res) => {
                   `• Real-time bay availability and status (scooters and bikes)\n` +
                   `• Station location and operating hours (Mon-Fri 6am-10pm, Sat 8am-6pm)\n` +
                   `• 110V/220V connectors and charging times (up to 4 hours)\n` +
-                  `• Booking, QR check-in, and early release rules\n` +
-                  `• Car parking spots with IoT detection\n\n` +
+                  `• Booking, QR check-in, and early release rules\n\n` +
                   `💡 *To enable open conversational AI answers, remember to add your OPENAI_API_KEY in Render.*`
                 : `⚡ ¡Hola ${userName}! Soy **ELECTRA Bot**, el asistente inteligente de la estación de carga solar en la Universidad de Medellín.\n\n` +
                   `Puedo ayudarte exclusivamente con todo lo relacionado con nuestra estación y plataforma:\n` +
                   `• Disponibilidad de bahías en tiempo real (patinetas y bicicletas)\n` +
-                  `• Ubicación y horarios (Lunes a Viernes 6am-10pm, Sábados 8am-6pm)\n` +
+                  `• Ubicación y horarios (Lunes a Viernes 5am-10pm, Sábados 8am-6pm)\n` +
                   `• Tipos de conectores 110V/220V y tiempos de carga (hasta 4 horas)\n` +
-                  `• Cómo reservar, validar tu llegada con QR o finalizar tu carga\n` +
-                  `• Parqueaderos de carros con sensores IoT\n\n` +
+                  `• Cómo reservar, validar tu llegada con QR o cancelar tu reserva\n\n` +
                   `💡 *Para habilitar respuestas abiertas con modelo generativo, recuerda agregar tu OPENAI_API_KEY en Render.*`;
 
             return res.json({ answer: defaultAnswer });
@@ -352,21 +370,20 @@ router.post("/chat", authenticate, async (req, res) => {
 - Reserva activa del usuario: ${activeReservation ? `Bahía ${activeReservation.bay}, Llegada ${activeReservation.arrival_time}, Código ${activeReservation.reservation_code}, Estado: ${activeReservation.status}` : 'Sin reserva activa'}
 - Total bahías: ${bays.length} | Libres: ${available.length} | Ocupadas: ${occupied.length} | Reservadas: ${reserved.length}
 - Detalle bahías: ${baysDetail || 'No disponible'}
-- Parqueaderos de carro libres: ${freeCarSpots.length} de ${carSpots.length}
-- Horario estación: Lunes a Viernes 6:00 AM - 10:00 PM | Sábados 8:00 AM - 6:00 PM | Domingos y festivos cerrado.
+- Horario estación: Lunes a Viernes 5:00 AM - 10:00 PM | Sábados 8:00 AM - 6:00 PM | Domingos y festivos cerrado.
 - Ubicación: Campus Universidad de Medellín, Cra. 87 # 30-65, Medellín.
 - Conectores: Tomacorrientes universales 110V/220V con protección térmica para cargadores de patinetas y bicicletas.
 - Costo: 100% gratuito (energía solar fotovoltaica limpia).
 - Tiempo máximo de carga: 4 horas continuas por usuario para garantizar rotación.
 `;
 
-        const systemPrompt = `Eres ELECTRA Bot, el asistente oficial y exclusivo de la plataforma "ELECTRA / SolCarga" (Estación de Recarga Solar Inteligente para Vehículos Eléctricos en el Campus de la Universidad de Medellín).
+        const systemPrompt = `Eres ELECTRA Bot, el asistente oficial y exclusivo de la plataforma "ELECTRA / SolCarga" (Estación de Recarga Solar Inteligente para Vehículos de Micromovilidad Eléctrica en el Campus de la Universidad de Medellín).
 
 TU MISIÓN:
 Responder preguntas de los usuarios de manera conversacional, amable, clara y precisa, utilizando emojis (⚡, ☀️, 🛴, 🚲, 📍).
 
 REGLAS ESTRICTAS DE SEGURIDAD Y AISLAMIENTO DE DOMINIO (GUARDRAILS):
-1. SOLO PUEDES HABLAR DE LA PLATAFORMA ELECTRA, la estación de carga solar, movilidad eléctrica (patinetas y bicicletas), vehículos, parqueaderos del campus, el clima solar, cómo reservar, horarios, ubicación, conectores y soporte.
+1. SOLO PUEDES HABLAR DE LA PLATAFORMA ELECTRA, la estación de carga solar, movilidad eléctrica (patinetas y bicicletas), vehículos de micromovilidad, el clima solar, cómo reservar, horarios, ubicación, conectores y soporte.
 2. BAJO NINGUNA CIRCUNSTANCIA respondas preguntas sobre temas no relacionados (por ejemplo: política, recetas de cocina, tareas de matemáticas, redacción de ensayos, programación ajena, chistes de otros temas, noticias generales, etc.).
 3. Si el usuario pregunta algo fuera del tema de la página o estación, debes RECHAZAR amablemente la pregunta con una respuesta como:
    ${isEnglish ? '"I can only answer questions related to the ELECTRA Solar Charging Station and campus e-mobility. Feel free to ask about bay availability, bookings, connectors, or station hours! ⚡"' : '"Solo puedo responder preguntas sobre la estación de recarga solar ELECTRA y la movilidad eléctrica en el campus. ¡Pregúntame sobre bahías libres, reservas, conectores u horarios! ⚡"'}
