@@ -31,11 +31,22 @@ function initAdminPanel() {
     loadAdminQRCodes();
     loadAdminCarSpots();
 }
+
+document.addEventListener("languageChanged", () => {
+    const adminView = document.getElementById("adminView");
+    if (adminView && !adminView.classList.contains("hidden")) {
+        loadAdminReservations();
+        loadAdminBays();
+        loadAdminUsers();
+    }
+});
+
 async function loadAdminReservations() {
     const token = getToken();
     const container = document.getElementById("adminReservationsList");
     if (!container) return;
-    container.innerHTML = `<div class="admin-loading">⏳ Cargando reservas...</div>`;
+    const loadingText = typeof t === "function" ? (currentLanguage === "en" ? "⏳ Loading active bookings..." : "⏳ Cargando reservas...") : "⏳ Cargando reservas...";
+    container.innerHTML = `<div class="admin-loading">${loadingText}</div>`;
     try {
         const res = await fetch("/api/admin/reservations/all", {
             headers: { "Authorization": `Bearer ${token}` }
@@ -46,18 +57,25 @@ async function loadAdminReservations() {
             return;
         }
         if (!data.length) {
+            const emptyText = (typeof t === "function") ? t("adminNoReservations") : "No hay reservas activas en este momento.";
             container.innerHTML = `
                 <div class="admin-empty">
                     <div style="font-size:48px;margin-bottom:10px">✅</div>
-                    <p>No hay reservas activas en este momento.</p>
+                    <p>${emptyText}</p>
                 </div>`;
             return;
         }
+        const cancelBtnText = (typeof t === "function") ? t("adminCancelBookingBtn") : "Quitar reserva";
+        const bayLabel = (typeof t === "function") ? t("bay") : "Bahía";
+        const arrivalLabel = (typeof t === "function") ? t("arrival") : "Llegada";
+        const chargingLabel = typeof t === "function" ? (currentLanguage === "en" ? "⚡ Charging" : "⚡ Cargando") : "⚡ Cargando";
+        const activeLabel = typeof t === "function" ? (currentLanguage === "en" ? "🟡 Active" : "🟡 Activa") : "🟡 Activa";
+
         container.innerHTML = data.map(r => `
             <div class="admin-reservation-card" id="res-card-${r.id}">
                 <div class="admin-res-info">
                     <div class="admin-res-badge ${r.status === 'checked_in' ? 'badge-charging' : 'badge-active'}">
-                        ${r.status === 'checked_in' ? '⚡ Cargando' : '🟡 Activa'}
+                        ${r.status === 'checked_in' ? chargingLabel : activeLabel}
                     </div>
                     <div class="admin-res-user">
                         <strong>${r.user_name} ${r.user_last_name || ''}</strong>
@@ -65,17 +83,17 @@ async function loadAdminReservations() {
                     </div>
                     <div class="admin-res-details">
                         <span>🏷️ <strong>${r.code}</strong></span>
-                        <span>⚡ Bahía <strong>${r.bay}</strong> (${r.vehicle_type})</span>
-                        <span>🕒 Llegada: ${r.arrival}</span>
+                        <span>⚡ ${bayLabel} <strong>${r.bay}</strong> (${r.vehicle_type})</span>
+                        <span>🕒 ${arrivalLabel}: ${r.arrival}</span>
                     </div>
                 </div>
                 <button class="admin-cancel-btn" onclick="adminCancelReservation(${r.id})" id="cancel-btn-${r.id}">
-                    Quitar reserva
+                    ${cancelBtnText}
                 </button>
             </div>
         `).join("");
     } catch (err) {
-        container.innerHTML = `<div class="admin-error">Error de conexión: ${err.message}</div>`;
+        container.innerHTML = `<div class="admin-error">Error: ${err.message}</div>`;
     }
 }
 async function adminCancelReservation(reservationId) {
@@ -121,7 +139,13 @@ async function loadAdminBays() {
         });
         const data = await res.json();
         const statusEmoji = { available: "🟢", reserved: "🟡", occupied: "🔴", offline: "⚪" };
-        const statusLabel = { available: "Libre", reserved: "Reservada", occupied: "Ocupada", offline: "Fuera de servicio" };
+        const isEn = typeof currentLanguage !== "undefined" && currentLanguage === "en";
+        const statusLabel = {
+            available: isEn ? "Free" : "Libre",
+            reserved: isEn ? "Reserved" : "Reservada",
+            occupied: isEn ? "Occupied" : "Ocupada",
+            offline: isEn ? "Offline" : "Fuera de servicio"
+        };
         container.innerHTML = data.map(b => `
             <div class="admin-bay-pill ${b.status}">
                 ${statusEmoji[b.status] || "⚪"} ${b.code}
@@ -136,7 +160,8 @@ async function loadAdminUsers() {
     const token = getToken();
     const container = document.getElementById("adminUsersList");
     if (!container) return;
-    container.innerHTML = `<div class="admin-loading">⏳ Cargando usuarios...</div>`;
+    const isEn = typeof currentLanguage !== "undefined" && currentLanguage === "en";
+    container.innerHTML = `<div class="admin-loading">${isEn ? "⏳ Loading registered users..." : "⏳ Cargando usuarios..."}</div>`;
     try {
         const res = await fetch("/api/auth/users", {
             headers: { "Authorization": `Bearer ${token}` }
@@ -147,9 +172,12 @@ async function loadAdminUsers() {
             return;
         }
         if (!data.length) {
-            container.innerHTML = `<p style="color:var(--muted);">No hay usuarios registrados.</p>`;
+            container.innerHTML = `<p style="color:var(--muted);">${isEn ? "No users registered yet." : "No hay usuarios registrados."}</p>`;
             return;
         }
+        const deleteLabel = isEn ? "🗑️ Delete" : "🗑️ Eliminar";
+        const vehicleFallback = isEn ? "Vehicle" : "Vehículo";
+        const locale = isEn ? "en-US" : "es-CO";
         container.innerHTML = data.map(u => `
             <div class="admin-user-card">
                 <div class="admin-user-details">
@@ -158,13 +186,13 @@ async function loadAdminUsers() {
                         <span class="admin-user-role-pill ${u.role === 'admin' ? 'role-admin' : 'role-user'}">${u.role.toUpperCase()}</span>
                     </div>
                     <div class="admin-user-meta-email">✉️ ${u.email}</div>
-                    <div class="admin-user-meta-sub">🚗 ${u.vehicle_type || 'Vehículo'} • 🗓️ ${new Date(u.created_at).toLocaleDateString()}</div>
+                    <div class="admin-user-meta-sub">🚗 ${u.vehicle_type || vehicleFallback} • 🗓️ ${new Date(u.created_at).toLocaleDateString(locale)}</div>
                 </div>
                 <button
                     class="admin-user-delete-btn"
                     onclick="deleteUserFromAdmin(${u.id}, '${u.name} ${u.last_name || ''}')"
-                    title="Eliminar cuenta de ${u.name}"
-                >🗑️ Eliminar</button>
+                    title="${deleteLabel} ${u.name}"
+                >${deleteLabel}</button>
             </div>
         `).join("");
     } catch (err) {

@@ -22,7 +22,7 @@
     <meta name="description" content="ELECTRA — Estación inteligente de carga para patinetas y bicicletas eléctricas">
 
     
-    <link rel="stylesheet" href="/css/styles.css?v=5">
+    <link rel="stylesheet" href="/css/styles.css?v=6">
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
@@ -44,7 +44,7 @@
 <body data-theme="normal">
 
     
-    <a href="#mainContent" class="skip-link" tabindex="0">Saltar al contenido principal</a>
+    <a href="#mainContent" class="skip-link" tabindex="0" data-i18n="skipLink">Saltar al contenido principal</a>
 
     
     <div id="loginView" class="view auth-view hidden">
@@ -54,7 +54,7 @@
                     <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
                 </div>
                 <h1>ELECTRA</h1>
-                <p style="font-size:13px; color:var(--muted); font-weight:500; margin:0;">Movilidad eléctrica inteligente</p>
+                <p data-i18n="brandSubtitle" style="font-size:13px; color:var(--muted); font-weight:500; margin:0;">Movilidad eléctrica inteligente</p>
             </div>
             
 
@@ -141,19 +141,19 @@
                 <h1>ELECTRA</h1>
             </div>
 
-            <p style="text-align:center; font-size:14px; margin-bottom:15px;">Hemos enviado un código a tu correo. Por favor, ingrésalo para verificar tu cuenta.</p>
+            <p style="text-align:center; font-size:14px; margin-bottom:15px;" data-i18n="verifyEmailNotice">Hemos enviado un código a tu correo. Por favor, ingrésalo para verificar tu cuenta.</p>
 
             <form id="verifyEmailForm">
                 <input type="hidden" id="verifyEmailAddress">
-                <label for="verifyCode">Código de verificación</label>
+                <label for="verifyCode" data-i18n="verificationCode">Código de verificación</label>
                 <input type="text" id="verifyCode" required maxlength="6" style="text-align:center; font-size:24px; letter-spacing:4px;" autocomplete="one-time-code">
 
                 <p id="verifyMessage" class="error-message"></p>
 
-                <button type="submit" class="primary-button">Verificar correo</button>
+                <button type="submit" class="primary-button" data-i18n="verifyBtn">Verificar correo</button>
             </form>
 
-            <button onclick="showLogin()" class="link-button">Volver al inicio de sesión</button>
+            <button onclick="showLogin()" class="link-button" data-i18n="backToLogin">Volver al inicio de sesión</button>
         </div>
     </div>
 
@@ -165,7 +165,7 @@
                 <h1>ELECTRA</h1>
             </div>
 
-            <p style="text-align:center; font-size:14px; margin-bottom:15px;">Ingresa tu correo y te enviaremos un código para restablecer tu contraseña.</p>
+            <p style="text-align:center; font-size:14px; margin-bottom:15px;" data-i18n="forgotNotice">Ingresa tu correo y te enviaremos un código para restablecer tu contraseña.</p>
 
             <form id="forgotPasswordForm">
                 <label for="forgotEmail" data-i18n="email">Correo electrónico</label>
@@ -173,10 +173,10 @@
 
                 <p id="forgotMessage" class="error-message"></p>
 
-                <button type="submit" class="primary-button">Enviar código</button>
+                <button type="submit" class="primary-button" data-i18n="sendCodeBtn">Enviar código</button>
             </form>
 
-            <button onclick="showLogin()" class="link-button">Cancelar</button>
+            <button onclick="showLogin()" class="link-button" data-i18n="cancel">Cancelar</button>
         </div>
     </div>
 
@@ -188,21 +188,21 @@
                 <h1>ELECTRA</h1>
             </div>
 
-            <p style="text-align:center; font-size:14px; margin-bottom:15px;">Ingresa el código que recibiste y tu nueva contraseña.</p>
+            <p style="text-align:center; font-size:14px; margin-bottom:15px;" data-i18n="resetNotice">Ingresa el código que recibiste y tu nueva contraseña.</p>
 
             <form id="resetPasswordForm">
-                <label for="resetToken">Código de recuperación</label>
+                <label for="resetToken" data-i18n="recoveryCode">Código de recuperación</label>
                 <input type="text" id="resetToken" required>
 
-                <label for="newPassword">Nueva contraseña</label>
+                <label for="newPassword" data-i18n="newPassword">Nueva contraseña</label>
                 <input type="password" id="newPassword" required minlength="8">
                 
                 <p id="resetMessage" class="error-message"></p>
 
-                <button type="submit" class="primary-button">Restablecer contraseña</button>
+                <button type="submit" class="primary-button" data-i18n="resetPasswordBtn">Restablecer contraseña</button>
             </form>
 
-            <button onclick="showLogin()" class="link-button">Cancelar</button>
+            <button onclick="showLogin()" class="link-button" data-i18n="cancel">Cancelar</button>
         </div>
     </div>
 
@@ -212,16 +212,16 @@
         
         <header class="topbar">
             <div class="header-brand">
-                <strong>ELECTRA</strong>
-                <span class="header-subtitle">Movilidad eléctrica inteligente</span>
+                <strong data-i18n="brandName">ELECTRA</strong>
+                <span class="header-subtitle" data-i18n="brandSubtitle">Movilidad eléctrica inteligente</span>
                 <small id="welcomeUser"></small>
             </div>
             <nav class="desktop-header-nav" aria-label="Navegación de escritorio">
-                <button class="desktop-nav-link active" data-page="home" onclick="showPage('home')">Inicio</button>
-                <button class="desktop-nav-link" data-page="bays" onclick="showPage('bays')">Bahías</button>
-                <button class="desktop-nav-link" data-page="qr" onclick="showPage('qr')">Mi Reserva</button>
-                <button class="desktop-nav-link" data-page="location" onclick="showPage('location')">Ubicación</button>
-                <button class="desktop-nav-link" data-page="ai" onclick="showPage('ai')">Ayuda</button>
+                <button class="desktop-nav-link active" data-page="home" onclick="showPage('home')" data-i18n="home">Inicio</button>
+                <button class="desktop-nav-link" data-page="bays" onclick="showPage('bays')" data-i18n="baysTitle">Bahías</button>
+                <button class="desktop-nav-link" data-page="qr" onclick="showPage('qr')" data-i18n="myQR">Mi Reserva</button>
+                <button class="desktop-nav-link" data-page="location" onclick="showPage('location')" data-i18n="location">Ubicación</button>
+                <button class="desktop-nav-link" data-page="ai" onclick="showPage('ai')" data-i18n="help">Ayuda</button>
             </nav>
             <div class="top-actions">
                 <div id="liveClock" class="live-clock" title="Fecha y hora actual">
@@ -247,16 +247,16 @@
                 <!-- Hero Banner de Bienvenida -->
                 <div class="welcome-hero-banner">
                     <div class="welcome-hero-content">
-                        <span class="welcome-pill">Estación de Carga • Campus UdeM</span>
+                        <span class="welcome-pill" data-i18n="welcomePill">Estación de Carga • Campus UdeM</span>
                         <h1 class="welcome-title"><span id="greetingText" data-i18n="greeting">Hola</span></h1>
-                        <p class="welcome-desc">Carga tu patineta o bicicleta eléctrica en los puertos de la universidad con energía solar. Consulta la disponibilidad en tiempo real o reserva tu turno antes de llegar.</p>
+                        <p class="welcome-desc" data-i18n="welcomeDesc">Carga tu patineta o bicicleta eléctrica en los puertos de la universidad con energía solar. Consulta la disponibilidad en tiempo real o reserva tu turno antes de llegar.</p>
                         <div class="welcome-actions">
                             <button class="welcome-primary-btn" onclick="showPage('bays')">
-                                <span>Ver bahías disponibles</span>
+                                <span data-i18n="seeBays">Ver bahías disponibles</span>
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                             </button>
                             <button class="welcome-secondary-btn" onclick="showPage('location')">
-                                <span>Ver mapa de llegada</span>
+                                <span data-i18n="seeMap">Ver mapa de llegada</span>
                             </button>
                         </div>
                     </div>
@@ -273,34 +273,34 @@
                             <div>
                                 <div class="weather-temp-line">
                                     <strong id="weatherTemp">--°C</strong>
-                                    <span class="weather-condition" id="weatherCondition">Consultando estación...</span>
+                                    <span class="weather-condition" id="weatherCondition" data-i18n="weatherConsulting">Consultando estación...</span>
                                 </div>
-                                <span class="weather-city" id="weatherCity">Campus Universidad de Medellín</span>
+                                <span class="weather-city" id="weatherCity" data-i18n="campusName">Campus Universidad de Medellín</span>
                             </div>
                         </div>
                         <div class="weather-badge-pill" id="weatherEfficiencyBadge">
-                            <span>Condición habitual</span>
+                            <span data-i18n="normalCondition">Condición habitual</span>
                         </div>
                     </div>
 
                     <div class="weather-charge-estimate" id="weatherChargeEstimate">
                         <div class="estimate-body">
-                            <span class="estimate-title">Tiempo estimado para recarga</span>
+                            <span class="estimate-title" data-i18n="chargeEstimateTitle">Tiempo estimado para recarga</span>
                             <p id="weatherEstimateText">Calculando tiempo según la temperatura ambiente de hoy...</p>
                         </div>
                     </div>
 
                     <div class="weather-stats-row">
                         <div class="weather-stat-chip">
-                            <span>Humedad</span>
+                            <span data-i18n="humidity">Humedad</span>
                             <strong id="weatherHumidity">--%</strong>
                         </div>
                         <div class="weather-stat-chip">
-                            <span>Viento</span>
+                            <span data-i18n="wind">Viento</span>
                             <strong id="weatherWind">-- km/h</strong>
                         </div>
                         <div class="weather-stat-chip">
-                            <span>Generación solar</span>
+                            <span data-i18n="solarGeneration">Generación solar</span>
                             <strong id="weatherSolar">Activa</strong>
                         </div>
                     </div>
@@ -345,7 +345,7 @@
                 <div class="reservation-live-indicator" id="reservationLiveBadge">
                     <span class="live-dot-pulse"></span>
                     <div class="reservation-live-text">
-                        <span class="reservation-live-label">Hora y fecha actual:</span>
+                        <span class="reservation-live-label" data-i18n="currentDateTime">Hora y fecha actual:</span>
                         <strong id="reservationCurrentTimeText">--:--:--</strong>
                     </div>
                 </div>
@@ -362,7 +362,7 @@
                     </button>
                 </div>
 
-                <label for="reservationDateInput">📅 Fecha de reserva</label>
+                <label for="reservationDateInput" data-i18n="reservationDate">📅 Fecha de reserva</label>
                 <div style="margin-top: 5px; margin-bottom: 15px;">
                     <input type="date" id="reservationDateInput" style="padding: 10px; border-radius: 8px; border: 1px solid var(--border); font-size: 16px; width: 100%; background: var(--surface); color: var(--text);">
                 </div>
@@ -398,7 +398,7 @@
                     
                     <div class="location-feature-row">
                         <span class="location-badge-icon">🗺️</span>
-                        <strong>Mapa en la app</strong>
+                        <strong data-i18n="mapInApp">Mapa en la app</strong>
                     </div>
 
                     <div class="location-feature-row">
@@ -406,7 +406,7 @@
                         <div class="location-text-wrap">
                             <strong id="stationName">ELECTRA Campus Central</strong>
                             <p id="stationAddress">Universidad de Medellín, Cra. 87 # 30-65</p>
-                            <p id="stationHours">Lunes a Viernes: 6:00 AM - 10:00 PM | Sábados: 8:00 AM - 6:00 PM</p>
+                            <p id="stationHours" data-i18n="stationHoursDesc">Lunes a Viernes: 6:00 AM - 10:00 PM | Sábados: 8:00 AM - 6:00 PM</p>
                         </div>
                     </div>
 
@@ -457,7 +457,7 @@
                 <div class="chat-chips" role="group" aria-label="Preguntas sugeridas">
                     <button class="chip" data-chip-es="¿Qué bahías están disponibles ahora?" data-chip-en="What bays are available now?" data-i18n="chipAvailable" onclick="sendChipI18n(this)">⚡ ¿Disponibles?</button>
 
-                    <button class="chip" data-chip-es="¿Cuál es el estado de mi reserva?" data-chip-en="What is the status of my reservation?" onclick="sendChipI18n(this)">📋 Mi reserva</button>
+                    <button class="chip" data-chip-es="¿Cuál es el estado de mi reserva?" data-chip-en="What is the status of my reservation?" data-i18n="chipMyRes" onclick="sendChipI18n(this)">📋 Mi reserva</button>
                     <button class="chip" data-chip-es="Recomiéndame una bahía para mi vehículo" data-chip-en="Recommend me a bay for my vehicle" data-i18n="chipRecommend" onclick="sendChipI18n(this)">🎯 Recomiéndame</button>
                     <button class="chip" data-chip-es="¿Cómo funciona el sistema de carga?" data-chip-en="How does the charging system work?" data-i18n="chipHowItWorks" onclick="sendChipI18n(this)">🚀 ¿Cómo funciona?</button>
                     <button class="chip" data-chip-es="¿Cuánto tiempo puedo cargar?" data-chip-en="How long can I charge?" data-i18n="chipChargeTime" onclick="sendChipI18n(this)">⏱️ Tiempo de carga</button>
@@ -485,7 +485,7 @@
 
             <button class="nav-button" data-page="bays" aria-label="Bahías de carga disponibles">
                 <div class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
-                <span>Bahías</span>
+                <span data-i18n="baysTitle">Bahías</span>
             </button>
 
 
@@ -516,13 +516,13 @@
             <div class="admin-topbar-brand">
                 <div class="admin-logo"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
                 <div>
-                    <strong>ELECTRA — Panel Admin</strong>
+                    <strong data-i18n="adminPanelTitle">ELECTRA — Panel Admin</strong>
                     <small id="adminUserName"></small>
                 </div>
             </div>
             <div style="display:flex; gap: 10px;">
-                <button class="admin-logout-btn" style="background: var(--red); border-color: var(--red); color: white;" onclick="deleteAdminAccount()">Eliminar cuenta 🗑️</button>
-                <button class="admin-logout-btn" onclick="adminLogout()">Cerrar sesión 🚪</button>
+                <button class="admin-logout-btn" style="background: var(--red); border-color: var(--red); color: white;" onclick="deleteAdminAccount()" data-i18n="adminDeleteAccount">Eliminar cuenta 🗑️</button>
+                <button class="admin-logout-btn" onclick="adminLogout()" data-i18n="adminLogout">Cerrar sesión 🚪</button>
             </div>
         </header>
 
@@ -534,18 +534,18 @@
             
             <div id="adminTab_reservations" class="admin-tab-content" style="margin-bottom: 40px;">
                 <div class="admin-section-header">
-                    <h2>🗓️ Reservas activas</h2>
-                    <button class="admin-refresh-btn" onclick="loadAdminReservations()">↺ Actualizar</button>
+                    <h2 data-i18n="adminReservationsTab">🗓️ Reservas activas</h2>
+                    <button class="admin-refresh-btn" onclick="loadAdminReservations()" data-i18n="adminRefreshBtn">↺ Actualizar</button>
                 </div>
-                <p style="color:var(--muted); font-size:13px; margin-top:0;">Puedes ver quién tiene una reserva y cancelarla para liberar la bahía inmediatamente.</p>
+                <p style="color:var(--muted); font-size:13px; margin-top:0;" data-i18n="adminReservationsSub">Puedes ver quién tiene una reserva y cancelarla para liberar la bahía inmediatamente.</p>
                 <div id="adminReservationsList"></div>
             </div>
 
             
             <div id="adminTab_bays" class="admin-tab-content" style="margin-bottom: 40px;">
                 <div class="admin-section-header">
-                    <h2>⚡ Estado de bahías</h2>
-                    <button class="admin-refresh-btn" onclick="loadAdminBays()">↺ Actualizar</button>
+                    <h2 data-i18n="adminBaysTab">⚡ Estado de bahías</h2>
+                    <button class="admin-refresh-btn" onclick="loadAdminBays()" data-i18n="adminRefreshBtn">↺ Actualizar</button>
                 </div>
                 <div id="adminBaysList" class="admin-bays-pills"></div>
             </div>
@@ -553,8 +553,8 @@
             
             <div id="adminTab_users" class="admin-tab-content" style="margin-bottom: 40px;">
                 <div class="admin-section-header">
-                    <h2>👥 Usuarios registrados</h2>
-                    <button class="admin-refresh-btn" onclick="loadAdminUsers()">↺ Actualizar</button>
+                    <h2 data-i18n="adminUsersTab">👥 Usuarios registrados</h2>
+                    <button class="admin-refresh-btn" onclick="loadAdminUsers()" data-i18n="adminRefreshBtn">↺ Actualizar</button>
                 </div>
                 <div id="adminUsersList" style="display: flex; flex-direction: column; gap: 10px;"></div>
             </div>
@@ -562,13 +562,13 @@
             
             <div id="adminTab_support" class="admin-tab-content" style="margin-bottom: 40px;">
                 <div class="admin-section-header">
-                    <h2>💬 Soporte en vivo</h2>
+                    <h2 data-i18n="adminSupportTab">💬 Soporte en vivo</h2>
                 </div>
                 <div class="admin-support-layout">
 
                     
                     <div class="admin-support-sidebar">
-                        <h3>Solicitudes</h3>
+                        <h3 data-i18n="supportRequestsTitle">Solicitudes</h3>
                         <div id="adminSupportRooms"></div>
                     </div>
 
@@ -597,10 +597,10 @@
             
             <div id="adminTab_qr" class="admin-tab-content" style="margin-bottom: 40px;">
                 <div class="admin-section-header">
-                    <h2>🔲 QR de Puertos</h2>
+                    <h2 data-i18n="adminQRTab">🔲 QR de Puertos</h2>
                     <div style="display: flex; gap: 8px;">
-                        <button class="admin-refresh-btn" onclick="loadAdminQRCodes()">↺ Actualizar</button>
-                        <button class="admin-refresh-btn" onclick="printAllQRCodes()" style="background: var(--green); color: white; border-color: var(--green);">🖨️ Imprimir todos</button>
+                        <button class="admin-refresh-btn" onclick="loadAdminQRCodes()" data-i18n="adminRefreshBtn">↺ Actualizar</button>
+                        <button class="admin-refresh-btn" onclick="printAllQRCodes()" style="background: var(--green); color: white; border-color: var(--green);" data-i18n="adminPrintAllQR">🖨️ Imprimir todos</button>
                     </div>
                 </div>
                 <p style="color:var(--muted); font-size:13px; margin-top:0;">Cada puerto tiene su propio QR. Los usuarios lo escanean para reservar o confirmar su llegada. Imprime y pégalos en cada punto de carga.</p>
@@ -738,12 +738,12 @@
         <div class="rn-modal-backdrop" onclick="closeReservationModal()"></div>
         <div class="rn-modal-card">
             <div class="rn-modal-icon success" id="modalIconEl" aria-hidden="true">✓</div>
-            <h2 id="modalTitle" class="rn-modal-title">¡Reserva confirmada!</h2>
-            <p id="modalDesc" class="rn-modal-desc">Tu bahía ha sido reservada exitosamente.</p>
+            <h2 id="modalTitle" class="rn-modal-title" data-i18n="modalResSuccessTitle">¡Reserva confirmada! 🎉</h2>
+            <p id="modalDesc" class="rn-modal-desc" data-i18n="modalResSuccessDesc">Tu bahía ha sido reservada exitosamente.</p>
             <div id="modalDetails" class="rn-modal-details"></div>
             <div class="rn-modal-actions">
-                <button id="modalPrimaryBtn" class="rn-modal-btn primary" onclick="closeReservationModal()">Ver mi QR</button>
-                <button class="rn-modal-btn secondary" onclick="closeReservationModal()">Cerrar</button>
+                <button id="modalPrimaryBtn" class="rn-modal-btn primary" onclick="closeReservationModal()" data-i18n="modalViewQR">Ver mi QR ▸</button>
+                <button class="rn-modal-btn secondary" onclick="closeReservationModal()" data-i18n="close">Cerrar</button>
             </div>
         </div>
     </div>
@@ -753,11 +753,11 @@
         <div class="rn-modal-backdrop" onclick="closeCancelModal()"></div>
         <div class="rn-modal-card">
             <div class="rn-modal-icon danger" aria-hidden="true">⚠️</div>
-            <h2 id="cancelModalTitle" class="rn-modal-title">¿Cancelar reserva?</h2>
-            <p class="rn-modal-desc">Esta acción liberará tu bahía y no se puede deshacer.</p>
+            <h2 id="cancelModalTitle" class="rn-modal-title" data-i18n="modalCancelTitle">¿Cancelar reserva?</h2>
+            <p class="rn-modal-desc" data-i18n="modalCancelDesc">Esta acción liberará tu bahía y no se puede deshacer.</p>
             <div class="rn-modal-actions">
-                <button id="cancelConfirmBtn" class="rn-modal-btn danger">Sí, cancelar</button>
-                <button class="rn-modal-btn secondary" onclick="closeCancelModal()">Volver</button>
+                <button id="cancelConfirmBtn" class="rn-modal-btn danger" data-i18n="modalCancelConfirm">Sí, cancelar</button>
+                <button class="rn-modal-btn secondary" onclick="closeCancelModal()" data-i18n="modalCancelBack">Volver</button>
             </div>
         </div>
     </div>
@@ -775,44 +775,44 @@
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <div style="font-size: 24px;">🚪</div>
                     <div>
-                        <h3 id="exitEarlyTitle" style="margin: 0; font-size: 16px; font-weight: 700;">Finalizar Carga y Salir</h3>
-                        <p id="exitEarlySubtitle" style="margin: 0; font-size: 12px; color: var(--muted);">Desconexión anticipada</p>
+                        <h3 id="exitEarlyTitle" style="margin: 0; font-size: 16px; font-weight: 700;" data-i18n="exitEarlyModalTitle">Finalizar Carga y Salir</h3>
+                        <p id="exitEarlySubtitle" style="margin: 0; font-size: 12px; color: var(--muted);" data-i18n="exitEarlySubtitle">Desconexión anticipada</p>
                     </div>
                 </div>
                 <button type="button" class="close-button" onclick="closeExitEarlyModal()" aria-label="Cerrar">×</button>
             </div>
 
             <div style="background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-md); padding: 12px; margin-bottom: 16px;">
-                <p style="margin: 0; font-size: 12px; color: var(--text-2); line-height: 1.4;">
+                <p style="margin: 0; font-size: 12px; color: var(--text-2); line-height: 1.4;" data-i18n="exitEarlyNotice">
                     Por favor selecciona el motivo de tu salida anticipada para liberar la bahía.
                 </p>
             </div>
 
             <form id="exitEarlyForm" onsubmit="handleExitEarlySubmit(event)">
-                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 8px;">
+                <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 8px;" data-i18n="exitReasonLabel">
                     Motivo de salida
                 </label>
 
                 <div class="exit-reasons-list" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px;">
                     <label style="display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--r-md); cursor: pointer; font-size: 13px; background: var(--surface);">
                         <input type="radio" name="exitReason" value="Batería suficiente" checked>
-                        <span>Carga de batería suficiente</span>
+                        <span data-i18n="reasonBatteryFull">Carga de batería suficiente</span>
                     </label>
                     <label style="display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--r-md); cursor: pointer; font-size: 13px; background: var(--surface);">
                         <input type="radio" name="exitReason" value="Urgencia / Tengo prisa">
-                        <span>Retiro de emergencia / Prisa</span>
+                        <span data-i18n="reasonUrgency">Retiro de emergencia / Prisa</span>
                     </label>
                     <label style="display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--r-md); cursor: pointer; font-size: 13px; background: var(--surface);">
                         <input type="radio" name="exitReason" value="Falla técnica en estación">
-                        <span>Falla técnica en puerto o cargador</span>
+                        <span data-i18n="reasonTechIssue">Falla técnica en puerto o cargador</span>
                     </label>
                     <label style="display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--r-md); cursor: pointer; font-size: 13px; background: var(--surface);">
                         <input type="radio" name="exitReason" value="Problema con vehículo">
-                        <span>Inconveniente con el vehículo</span>
+                        <span data-i18n="reasonVehicleIssue">Inconveniente con el vehículo</span>
                     </label>
                     <label style="display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--r-md); cursor: pointer; font-size: 13px; background: var(--surface);">
                         <input type="radio" name="exitReason" value="Otro motivo">
-                        <span>Otro motivo</span>
+                        <span data-i18n="reasonOther">Otro motivo</span>
                     </label>
                 </div>
 
@@ -820,17 +820,17 @@
                     <label for="exitDetailsInput" style="display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 4px;">
                         Observaciones adicionales (opcional):
                     </label>
-                    <textarea id="exitDetailsInput" rows="2" placeholder="Detalles de la sesión..." style="width: 100%; resize: none; font-size: 13px;"></textarea>
+                    <textarea id="exitDetailsInput" rows="2" placeholder="Detalles de la sesión..." data-i18n-placeholder="exitDetailsPlaceholder" style="width: 100%; resize: none; font-size: 13px;"></textarea>
                 </div>
 
                 <div style="display: flex; flex-direction: column; gap: 8px;">
-                    <button type="button" class="primary-button" onclick="startExitScan()">
+                    <button type="button" class="primary-button" onclick="startExitScan()" data-i18n="exitScanBtn">
                         📷 Escanear QR de bahía para salir
                     </button>
-                    <button type="submit" id="confirmExitBtn" class="link-button" style="border: 1px solid var(--border); width: 100%; text-align: center;">
+                    <button type="submit" id="confirmExitBtn" class="link-button" style="border: 1px solid var(--border); width: 100%; text-align: center;" data-i18n="exitConfirmBtn">
                         Confirmar salida y liberar bahía
                     </button>
-                    <button type="button" class="link-button" onclick="closeExitEarlyModal()" style="font-size: 12px; color: var(--muted); text-align: center;">
+                    <button type="button" class="link-button" onclick="closeExitEarlyModal()" style="font-size: 12px; color: var(--muted); text-align: center;" data-i18n="exitContinueBtn">
                         Continuar cargando
                     </button>
                 </div>
@@ -846,17 +846,17 @@
     </div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="/js/i18n.js?v=2"></script>
-    <script src="/js/accessibility.js?v=2"></script>
-    <script src="/js/auth.js?v=2"></script>
-    <script src="/js/reservations.js?v=2"></script>
-    <script src="/js/checkin.js?v=2"></script>
-    <script src="/js/ai.js?v=2"></script>
-    <script src="/js/admin.js?v=2"></script>
-    <script src="/js/geo.js?v=2"></script>
-    <script src="/js/profile.js?v=1"></script>
+    <script src="/js/i18n.js?v=3"></script>
+    <script src="/js/accessibility.js?v=3"></script>
+    <script src="/js/auth.js?v=3"></script>
+    <script src="/js/reservations.js?v=3"></script>
+    <script src="/js/checkin.js?v=3"></script>
+    <script src="/js/ai.js?v=3"></script>
+    <script src="/js/admin.js?v=3"></script>
+    <script src="/js/geo.js?v=3"></script>
+    <script src="/js/profile.js?v=2"></script>
 
-    <script src="/js/app.js?v=2"></script>
+    <script src="/js/app.js?v=3"></script>
 
     
     <script>

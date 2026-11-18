@@ -65,15 +65,32 @@ function renderProfilePanel(user) {
 
     const initials = getInitials(user.name, user.last_name);
     const photo = user.profile_photo;
-    const memberSince = user.created_at ? new Date(user.created_at).toLocaleDateString('es-CO', {
+    const isEn = typeof currentLanguage !== "undefined" && currentLanguage === "en";
+    const locale = isEn ? "en-US" : "es-CO";
+
+    const memberSince = user.created_at ? new Date(user.created_at).toLocaleDateString(locale, {
         year: 'numeric', month: 'long', day: 'numeric'
-    }) : 'Hace poco';
+    }) : (isEn ? 'Recently' : 'Hace poco');
 
     const pointsLevel = getPointsLevel(user.points || 0);
 
+    const txtPoints = typeof t === "function" ? t("profileAccumulatedPoints") : "Puntos acumulados";
+    const txtRule1 = typeof t === "function" ? t("profilePointsRule1") : "+3 pts por cada sesión de carga completada";
+    const txtRule2 = typeof t === "function" ? t("profilePointsRule2") : "Energía 100% de origen solar y limpia";
+    const txtAccountInfo = typeof t === "function" ? t("profileAccountInfo") : "Información de la cuenta";
+    const txtVehicle = typeof t === "function" ? t("profileVehicleHabitual") : "Vehículo habitual";
+    const txtMemberSince = typeof t === "function" ? t("profileMemberSince") : "Miembro desde";
+    const txtRole = typeof t === "function" ? t("profileSystemRole") : "Rol del sistema";
+    const txtLogout = typeof t === "function" ? t("profileLogout") : "Cerrar sesión";
+    const txtDelete = typeof t === "function" ? t("profileDeleteAccount") : "Eliminar cuenta";
+    const txtChange = typeof t === "function" ? t("profileChangePhoto") : "Cambiar";
+    const txtRoleLabel = user.role === 'admin' 
+        ? (typeof t === "function" ? t("profileRoleAdmin") : "Administrador")
+        : (typeof t === "function" ? t("profileRoleUser") : "Usuario");
+
     container.innerHTML = `
         <!-- Close Button -->
-        <button class="profile-close-btn" onclick="closeProfilePanel()" aria-label="Cerrar perfil">
+        <button class="profile-close-btn" onclick="closeProfilePanel()" aria-label="${typeof t === "function" ? t("close") : "Cerrar"}">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
 
@@ -89,7 +106,7 @@ function renderProfilePanel(user) {
                         <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
                         <circle cx="12" cy="13" r="4"/>
                     </svg>
-                    <span>Cambiar</span>
+                    <span>${txtChange}</span>
                 </div>
             </div>
             <input type="file" id="profilePhotoInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)">
@@ -101,7 +118,7 @@ function renderProfilePanel(user) {
                         ? '<path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/>' 
                         : '<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'}
                 </svg>
-                ${user.role === 'admin' ? 'Administrador' : 'Usuario'}
+                ${txtRoleLabel}
             </div>
         </div>
 
@@ -115,7 +132,7 @@ function renderProfilePanel(user) {
                 </div>
                 <div>
                     <div class="profile-points-value">${user.points || 0}</div>
-                    <div class="profile-points-label">Puntos acumulados</div>
+                    <div class="profile-points-label">${txtPoints}</div>
                 </div>
             </div>
             <div class="profile-points-bar-wrap">
@@ -123,27 +140,27 @@ function renderProfilePanel(user) {
             </div>
             <div class="profile-points-level">
                 <span class="profile-level-badge">${pointsLevel.name}</span>
-                <span class="profile-level-next">${pointsLevel.next - (user.points || 0)} pts para ${pointsLevel.nextName}</span>
+                <span class="profile-level-next">${pointsLevel.next - (user.points || 0)} pts ${isEn ? "to" : "para"} ${pointsLevel.nextName}</span>
             </div>
             <div class="profile-points-info">
                 <div class="profile-points-info-item">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="2" y="7" width="16" height="10" rx="2" ry="2"></rect><line x1="22" y1="11" x2="22" y2="13"></line>
                     </svg>
-                    <span>+3 pts por cada sesión de carga completada</span>
+                    <span>${txtRule1}</span>
                 </div>
                 <div class="profile-points-info-item">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
                     </svg>
-                    <span>Energía de origen solar y movilidad sostenible</span>
+                    <span>${txtRule2}</span>
                 </div>
             </div>
         </div>
 
         <!-- User Info Section -->
         <div class="profile-info-section">
-            <h3 class="profile-section-title">Información de la cuenta</h3>
+            <h3 class="profile-section-title">${txtAccountInfo}</h3>
             <div class="profile-info-row">
                 <span class="profile-info-icon">
                     <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -151,8 +168,8 @@ function renderProfilePanel(user) {
                         <circle cx="7" cy="17" r="2"></circle><path d="M9 17h6"></path><circle cx="17" cy="17" r="2"></circle>
                     </svg>
                 </span>
-                <span class="profile-info-label">Vehículo habitual</span>
-                <span class="profile-info-value">${user.vehicle_type || 'No especificado'}</span>
+                <span class="profile-info-label">${txtVehicle}</span>
+                <span class="profile-info-value">${user.vehicle_type || (isEn ? 'Not specified' : 'No especificado')}</span>
             </div>
             <div class="profile-info-row">
                 <span class="profile-info-icon">
@@ -160,7 +177,7 @@ function renderProfilePanel(user) {
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>
                     </svg>
                 </span>
-                <span class="profile-info-label">Miembro desde</span>
+                <span class="profile-info-label">${txtMemberSince}</span>
                 <span class="profile-info-value">${memberSince}</span>
             </div>
             <div class="profile-info-row">
@@ -169,8 +186,8 @@ function renderProfilePanel(user) {
                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                     </svg>
                 </span>
-                <span class="profile-info-label">Rol del sistema</span>
-                <span class="profile-info-value">${user.role === 'admin' ? 'Administrador' : 'Usuario'}</span>
+                <span class="profile-info-label">${txtRole}</span>
+                <span class="profile-info-value">${txtRoleLabel}</span>
             </div>
         </div>
 
@@ -182,7 +199,7 @@ function renderProfilePanel(user) {
                     <polyline points="16 17 21 12 16 7"/>
                     <line x1="21" y1="12" x2="9" y2="12"/>
                 </svg>
-                Cerrar sesión
+                ${txtLogout}
             </button>
             <button class="profile-action-btn profile-action-delete" onclick="profileDeleteAccount()">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -191,12 +208,12 @@ function renderProfilePanel(user) {
                     <line x1="10" y1="11" x2="10" y2="17"/>
                     <line x1="14" y1="11" x2="14" y2="17"/>
                 </svg>
-                Eliminar cuenta
+                ${txtDelete}
             </button>
         </div>
 
         <!-- Version -->
-        <p class="profile-version">ELECTRA • Sistema de Movilidad Eléctrica v1.0</p>
+        <p class="profile-version">${typeof t === "function" ? t("profileVersion") : "ELECTRA • Movilidad Eléctrica Inteligente v1.2"}</p>
     `;
 
     // Animate elements in

@@ -25,9 +25,12 @@ document.addEventListener("DOMContentLoaded", () => {
 function setupLiveClock() {
     function updateClocks() {
         const now = new Date();
+        const isEn = typeof currentLanguage !== "undefined" && currentLanguage === "en";
+        const locale = isEn ? "en-US" : "es-CO";
+
         const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        const dateStr = now.toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
-        const fullDateStr = now.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+        const dateStr = now.toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' });
+        const fullDateStr = now.toLocaleDateString(locale, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
         const timeEl = document.getElementById("liveClockTime");
         const dateEl = document.getElementById("liveClockDate");
@@ -41,11 +44,13 @@ function setupLiveClock() {
     }
 
     updateClocks();
-    setInterval(updateClocks, 1000);
+    if (!window._liveClockInterval) {
+        window._liveClockInterval = setInterval(updateClocks, 1000);
+    }
 }
 
 // ==========================================================================
-// WEATHER & SMART CHARGING ESTIMATOR (CLIMA Y ESTIMADOR EN VIVO)
+// WEATHER & SMART CHARGING ESTIMATOR (CLIMA Y ESTIMADOR EN VIVO MULTI-IDIOMA)
 // ==========================================================================
 async function loadLiveWeather() {
     const tempEl = document.getElementById("weatherTemp");
@@ -59,8 +64,9 @@ async function loadLiveWeather() {
 
     if (!tempEl) return;
 
+    const isEn = typeof currentLanguage !== "undefined" && currentLanguage === "en";
+
     try {
-        // Coordenadas de Medellín (Campus Universidad de Medellín)
         const lat = 6.2314;
         const lon = -75.6120;
         const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,is_day&timezone=auto`);
@@ -74,35 +80,34 @@ async function loadLiveWeather() {
         const code = current.weather_code;
         const isDay = current.is_day === 1;
 
-        // Mapeo amigable de condiciones meteorológicas
-        let conditionText = "Despejado";
+        let conditionText = isEn ? "Clear sky" : "Despejado";
         let icon = isDay ? "☀️" : "🌙";
-        let solarDesc = isDay ? "Alta ☀️" : "Nocturna 🌙";
+        let solarDesc = isDay ? (isEn ? "High ☀️" : "Alta ☀️") : (isEn ? "Night (Grid)" : "Nocturna 🌙");
 
         if (code === 0) {
-            conditionText = isDay ? "Soleado y despejado" : "Noche despejada";
+            conditionText = isDay ? (isEn ? "Sunny & clear" : "Soleado y despejado") : (isEn ? "Clear night" : "Noche despejada");
             icon = isDay ? "☀️" : "🌙";
-            solarDesc = isDay ? "Óptima (100%)" : "Inactiva (Red)";
+            solarDesc = isDay ? (isEn ? "Optimal (100%)" : "Óptima (100%)") : (isEn ? "Inactive (Grid)" : "Inactiva (Red)");
         } else if (code >= 1 && code <= 3) {
-            conditionText = "Parcialmente nublado";
+            conditionText = isEn ? "Partly cloudy" : "Parcialmente nublado";
             icon = "⛅";
-            solarDesc = isDay ? "Media (75%)" : "Inactiva (Red)";
+            solarDesc = isDay ? (isEn ? "Medium (75%)" : "Media (75%)") : (isEn ? "Inactive (Grid)" : "Inactiva (Red)");
         } else if (code >= 45 && code <= 48) {
-            conditionText = "Neblina suave";
+            conditionText = isEn ? "Gentle mist" : "Neblina suave";
             icon = "🌫️";
-            solarDesc = "Baja (40%)";
+            solarDesc = isEn ? "Low (40%)" : "Baja (40%)";
         } else if (code >= 51 && code <= 67) {
-            conditionText = "Lluvia ligera";
+            conditionText = isEn ? "Light rain" : "Lluvia ligera";
             icon = "🌧️";
-            solarDesc = "Baja (30%)";
+            solarDesc = isEn ? "Low (30%)" : "Baja (30%)";
         } else if (code >= 80 && code <= 82) {
-            conditionText = "Lluvia moderada";
+            conditionText = isEn ? "Moderate rain" : "Lluvia moderada";
             icon = "🌧️";
-            solarDesc = "Reducida";
+            solarDesc = isEn ? "Reduced" : "Reducida";
         } else if (code >= 95) {
-            conditionText = "Tormenta eléctrica";
+            conditionText = isEn ? "Thunderstorm" : "Tormenta eléctrica";
             icon = "⛈️";
-            solarDesc = "Mínima";
+            solarDesc = isEn ? "Minimal" : "Mínima";
         }
 
         tempEl.textContent = `${temp}°C`;
@@ -112,39 +117,45 @@ async function loadLiveWeather() {
         windEl.textContent = `${wind} km/h`;
         solarEl.textContent = solarDesc;
 
-        // Cálculo dinámico del tiempo de carga de la patineta según clima y temperatura de batería de litio
-        let minMinutes = 45;
-        let maxMinutes = 60;
+        let minMinutes = 40;
+        let maxMinutes = 55;
         let advice = "";
 
         if (temp >= 20 && temp <= 27) {
             minMinutes = 40;
             maxMinutes = 50;
-            advice = `Hoy la temperatura en el campus está en <strong>${temp}°C</strong> con cielo <strong>${conditionText.toLowerCase()}</strong>. Con estas condiciones templadas, tu patineta o bici tardará aproximadamente de <strong>${minMinutes} a ${maxMinutes} minutos</strong> para llegar al 80%.`;
-            if (badgeEl) badgeEl.innerHTML = `<span>Clima favorable</span>`;
+            advice = isEn
+                ? `Campus temperature is currently <strong>${temp}°C</strong> with <strong>${conditionText.toLowerCase()}</strong>. Under these optimal conditions, your vehicle will reach 80% charge in about <strong>${minMinutes} to ${maxMinutes} minutes</strong>.`
+                : `Hoy la temperatura en el campus está en <strong>${temp}°C</strong> con cielo <strong>${conditionText.toLowerCase()}</strong>. Con estas condiciones templadas, tu vehículo tardará aproximadamente de <strong>${minMinutes} a ${maxMinutes} minutos</strong> para llegar al 80%.`;
+            if (badgeEl) badgeEl.innerHTML = `<span>${isEn ? "Favorable Weather" : "Clima favorable"}</span>`;
         } else if (temp > 27) {
             minMinutes = 45;
             maxMinutes = 60;
-            advice = `Hace calor en la estación (<strong>${temp}°C</strong>). El cargador cuida la temperatura de tu batería para no recalentarla, así que el tiempo estimado será de <strong>${minMinutes} a ${maxMinutes} minutos</strong>.`;
-            if (badgeEl) badgeEl.innerHTML = `<span>Día caluroso</span>`;
+            advice = isEn
+                ? `Warm temperature at the station (<strong>${temp}°C</strong>). The intelligent solar charger monitors battery heat, resulting in approximately <strong>${minMinutes} to ${maxMinutes} minutes</strong> of safe charging.`
+                : `Hace calor en la estación (<strong>${temp}°C</strong>). El cargador cuida la temperatura de tu batería para no recalentarla, así que el tiempo estimado será de <strong>${minMinutes} a ${maxMinutes} minutos</strong>.`;
+            if (badgeEl) badgeEl.innerHTML = `<span>${isEn ? "Warm Day" : "Día caluroso"}</span>`;
         } else {
             minMinutes = 50;
             maxMinutes = 65;
-            advice = `Tenemos un ambiente fresco (<strong>${temp}°C</strong>) con <strong>${conditionText.toLowerCase()}</strong>. La recarga se realiza de forma suave para proteger las celdas, tomando de <strong>${minMinutes} a ${maxMinutes} minutos</strong>.`;
-            if (badgeEl) badgeEl.innerHTML = `<span>Ambiente fresco</span>`;
+            advice = isEn
+                ? `Cool atmosphere today (<strong>${temp}°C</strong>) with <strong>${conditionText.toLowerCase()}</strong>. Charging operates gently to protect battery cells, taking around <strong>${minMinutes} to ${maxMinutes} minutes</strong>.`
+                : `Tenemos un ambiente fresco (<strong>${temp}°C</strong>) con <strong>${conditionText.toLowerCase()}</strong>. La recarga se realiza de forma suave para proteger las celdas, tomando de <strong>${minMinutes} a ${maxMinutes} minutos</strong>.`;
+            if (badgeEl) badgeEl.innerHTML = `<span>${isEn ? "Cool Atmosphere" : "Ambiente fresco"}</span>`;
         }
 
         estimateEl.innerHTML = advice;
     } catch (err) {
         console.warn("Fallo cargando clima en vivo:", err);
-        // Respaldo confiable en caso de falla de red
         tempEl.textContent = "24°C";
-        condEl.textContent = "Agradable / Parcialmente Soleado";
+        condEl.textContent = isEn ? "Pleasant / Partly Sunny" : "Agradable / Parcialmente Soleado";
         iconEl.textContent = "☀️";
         humEl.textContent = "65%";
         windEl.textContent = "10 km/h";
-        solarEl.textContent = "Alta ☀️";
-        estimateEl.innerHTML = `El clima está a <strong>24°C (Templado)</strong>. Tu patineta se demorará de <strong>45 a 60 minutos</strong> en completar una carga óptima del 20% al 80%.`;
+        solarEl.textContent = isEn ? "High ☀️" : "Alta ☀️";
+        estimateEl.innerHTML = isEn
+            ? `The campus weather is at <strong>24°C (Mild)</strong>. Your scooter or bike will take about <strong>45 to 60 minutes</strong> to complete an optimal charge from 20% to 80%.`
+            : `El clima está a <strong>24°C (Templado)</strong>. Tu patineta se demorará de <strong>45 a 60 minutos</strong> en completar una carga óptima del 20% al 80%.`;
     }
 }
 function setupAuth() {
@@ -642,11 +653,12 @@ function renderReservation(reservation, qr) {
     const exitEarlyBtn = isCheckedIn ? `
         <button id="exitEarlyBtn" class="danger-button" style="margin-top: 14px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="openExitEarlyModal()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            Finalizar carga anticipadamente
+            ${t("earlyExitBtn")}
         </button>
-        <p class="checkin-hint-small" style="margin-top: 6px; font-size: 12px; color: var(--text-3); text-align: center;">Permite liberar el puerto para otros usuarios antes de la hora límite.</p>
+        <p class="checkin-hint-small" style="margin-top: 6px; font-size: 12px; color: var(--text-3); text-align: center;">${t("earlyExitHint")}</p>
     ` : "";
-    const resCardDate = reservation.created_at ? new Date(reservation.created_at).toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' }) : new Date().toLocaleDateString([], { weekday: 'short', day: 'numeric', month: 'short' });
+    const locale = typeof currentLanguage !== "undefined" && currentLanguage === "en" ? "en-US" : "es-CO";
+    const resCardDate = reservation.created_at ? new Date(reservation.created_at).toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' }) : new Date().toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' });
     document.getElementById("qrContainer").innerHTML = `
         <div class="qr-card">
             <h3>${t("reservationConfirmed")}</h3>
@@ -654,11 +666,11 @@ function renderReservation(reservation, qr) {
             <img src="${qr}" alt="${t("myQR")} ${reservation.code}">
             <strong>${reservation.code}</strong>
             <div class="reservation-details">
-                <p><span>📅 Fecha</span><strong>${resCardDate}</strong></p>
-                <p><span>${t("bay")}</span><strong>${reservation.bay}</strong></p>
-                <p><span>${t("vehicle")}</span><strong>${reservation.vehicle_type}</strong></p>
-                <p><span>${t("arrival")}</span><strong>${reservation.arrival}</strong></p>
-                <p><span>${t("departure") || "Salida"}</span><strong>${reservation.duration}</strong></p>
+                <p><span>📅 ${t("reservationDate")}</span><strong>${resCardDate}</strong></p>
+                <p><span>⚡ ${t("bay")}</span><strong>${reservation.bay}</strong></p>
+                <p><span>🚲 ${t("vehicle")}</span><strong>${reservation.vehicle_type}</strong></p>
+                <p><span>🕒 ${t("arrival")}</span><strong>${reservation.arrival}</strong></p>
+                <p><span>⏱️ ${t("departure")}</span><strong>${reservation.duration}</strong></p>
             </div>
             ${checkinBtn}
             ${exitEarlyBtn}
@@ -783,6 +795,7 @@ window.sendChipI18n = function(btn) {
 };
 document.addEventListener("languageChanged", () => {
     renderBays();
+    loadLiveWeather();
     const user = getUser();
     if (user) {
         document.getElementById("greetingText").textContent = `${t("greeting")}, ${user.name} 👋`;
@@ -792,19 +805,20 @@ document.addEventListener("languageChanged", () => {
 function showReservationConfirmModal(reservation) {
     const modal = document.getElementById("reservationModal");
     if (!modal) { showPage("qr"); return; }
-    document.getElementById("modalTitle").textContent = "¡Reserva confirmada! 🎉";
-    document.getElementById("modalDesc").textContent = "Tu bahía ha sido reservada con éxito. Presenta tu credencial QR al llegar.";
-    const resDateStr = reservation.reservation_date || (reservation.created_at ? new Date(reservation.created_at).toLocaleDateString() : new Date().toLocaleDateString());
+    document.getElementById("modalTitle").textContent = t("modalResSuccessTitle");
+    document.getElementById("modalDesc").textContent = t("modalResSuccessDesc");
+    const locale = typeof currentLanguage !== "undefined" && currentLanguage === "en" ? "en-US" : "es-CO";
+    const resDateStr = reservation.reservation_date || (reservation.created_at ? new Date(reservation.created_at).toLocaleDateString(locale) : new Date().toLocaleDateString(locale));
     document.getElementById("modalDetails").innerHTML = `
-        <div class="rn-modal-row"><span>🏷️ Código de Reserva</span><strong>${reservation.code}</strong></div>
-        <div class="rn-modal-row"><span>📅 Fecha</span><strong>${resDateStr}</strong></div>
-        <div class="rn-modal-row"><span>⚡ Bahía Asignada</span><strong>${reservation.bay}</strong></div>
-        <div class="rn-modal-row"><span>🚲 Tipo de Vehículo</span><strong>${reservation.vehicle_type || selectedVehicleType}</strong></div>
-        <div class="rn-modal-row"><span>⏰ Horario</span><strong>${reservation.arrival} - ${reservation.duration || ''}</strong></div>
+        <div class="rn-modal-row"><span>🏷️ ${t("reservationCodeLabel")}</span><strong>${reservation.code}</strong></div>
+        <div class="rn-modal-row"><span>📅 ${t("reservationDate")}</span><strong>${resDateStr}</strong></div>
+        <div class="rn-modal-row"><span>⚡ ${t("bay")}</span><strong>${reservation.bay}</strong></div>
+        <div class="rn-modal-row"><span>🚲 ${t("vehicle")}</span><strong>${reservation.vehicle_type || selectedVehicleType}</strong></div>
+        <div class="rn-modal-row"><span>⏰ ${t("arrival")} - ${t("departure")}</span><strong>${reservation.arrival} - ${reservation.duration || ''}</strong></div>
     `;
     const primaryBtn = document.getElementById("modalPrimaryBtn");
     if (primaryBtn) {
-        primaryBtn.textContent = "Ver mi QR ▸";
+        primaryBtn.textContent = t("modalViewQR");
         primaryBtn.onclick = () => { closeReservationModal(); showPage("qr"); loadReservation(); };
     }
     modal.classList.remove("hidden");
